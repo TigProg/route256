@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"gitlab.ozon.dev/kshmatov/masterclass1/internal/commander"
+	"gitlab.ozon.dev/tigprog/homeword-1/internal/commander"
 
-	"gitlab.ozon.dev/kshmatov/masterclass1/internal/storage"
+	"gitlab.ozon.dev/tigprog/homeword-1/internal/storage"
 )
 
 const (
