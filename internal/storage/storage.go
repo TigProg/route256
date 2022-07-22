@@ -12,6 +12,9 @@ var data map[uint]*BusBooking
 var BusBookingNotExists = errors.New("bus booking dows not exist")
 var BusBookingExists = errors.New("bus booking exists")
 
+var EmptyField = errors.New("field is empty")
+var FieldNotExist = errors.New("field does not exists")
+
 func init() {
 	log.Println("init storage")
 	data = make(map[uint]*BusBooking)
@@ -37,13 +40,29 @@ func Add(bb *BusBooking) error {
 	return nil
 }
 
-//func Update(u *User) error {
-//	if _, ok := data[u.GetId()]; !ok {
-//		return errors.Wrap(UserNotExists, strconv.FormatUint(uint64(u.GetId()), 10))
-//	}
-//	data[u.GetId()] = u
-//	return nil
-//}
+func Update(id uint, field, newValue string) error {
+	bb, ok := data[id]
+	if !ok {
+		return errors.Wrap(BusBookingNotExists, strconv.FormatUint(uint64(id), 10))
+	}
+	if field == "" {
+		return EmptyField
+	}
+	switch field {
+	case "route":
+		return bb.SetRoute(newValue)
+	case "date":
+		return bb.SetDate(newValue)
+	case "seat":
+		seatUint64, err := strconv.ParseUint(newValue, 10, 32)
+		if err != nil {
+			return err
+		}
+		return bb.SetSeat(uint(seatUint64))
+	default:
+		return errors.Wrap(FieldNotExist, field)
+	}
+}
 
 func Delete(id uint) error {
 	if _, ok := data[id]; ok {
