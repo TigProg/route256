@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/pkg/errors"
+	"gitlab.ozon.dev/tigprog/homeword-1/internal/tools"
 )
 
 var data map[uint]*BusBooking
@@ -54,11 +55,11 @@ func Update(id uint, field, newValue string) error {
 	case "date":
 		return bb.SetDate(newValue)
 	case "seat":
-		seatUint64, err := strconv.ParseUint(newValue, 10, 32)
+		seat, err := tools.StringToUint(newValue)
 		if err != nil {
 			return err
 		}
-		return bb.SetSeat(uint(seatUint64))
+		return bb.SetSeat(seat)
 	default:
 		return errors.Wrap(FieldNotExist, field)
 	}

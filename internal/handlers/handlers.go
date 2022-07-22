@@ -3,8 +3,9 @@ package handlers
 import (
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
+
+	"gitlab.ozon.dev/tigprog/homeword-1/internal/tools"
 
 	"github.com/pkg/errors"
 	"gitlab.ozon.dev/tigprog/homeword-1/internal/commander"
@@ -48,11 +49,11 @@ func addFunc(data string) string {
 	if len(params) != 3 {
 		return errors.Wrapf(BadArgument, "%d items: <%v>", len(params), params).Error()
 	}
-	seatUint64, err := strconv.ParseUint(params[2], 10, 32)
+	seat, err := tools.StringToUint(params[2])
 	if err != nil {
-		return err.Error()
+		return errors.Wrap(err, params[2]).Error()
 	}
-	bb, err := storage.NewBusBooking(params[0], params[1], uint(seatUint64))
+	bb, err := storage.NewBusBooking(params[0], params[1], seat)
 	if err != nil {
 		return err.Error()
 	}
@@ -69,15 +70,15 @@ func updateFunc(data string) string {
 	if len(params) != 3 {
 		return errors.Wrapf(BadArgument, "%d items: <%v>", len(params), params).Error()
 	}
-	idUint64, err := strconv.ParseUint(params[0], 10, 32)
+	id, err := tools.StringToUint(params[0])
 	if err != nil {
 		return err.Error()
 	}
-	err = storage.Update(uint(idUint64), params[1], params[2])
+	err = storage.Update(id, params[1], params[2])
 	if err != nil {
 		return err.Error()
 	}
-	return fmt.Sprintf("bus booking <%d> updated", idUint64)
+	return fmt.Sprintf("bus booking <%d> updated", id)
 }
 
 func deleteFunc(data string) string {
@@ -86,15 +87,15 @@ func deleteFunc(data string) string {
 	if len(params) != 1 {
 		return errors.Wrapf(BadArgument, "%d items: <%v>", len(params), params).Error()
 	}
-	idUint64, err := strconv.ParseUint(params[0], 10, 32)
+	id, err := tools.StringToUint(params[0])
 	if err != nil {
 		return err.Error()
 	}
-	err = storage.Delete(uint(idUint64))
+	err = storage.Delete(id)
 	if err != nil {
 		return err.Error()
 	}
-	return fmt.Sprintf("bus booking <%d> deleted", idUint64)
+	return fmt.Sprintf("bus booking <%d> deleted", id)
 }
 
 func AddHandlers(c *commander.Commander) {
