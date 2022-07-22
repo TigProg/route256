@@ -15,6 +15,7 @@ import (
 const (
 	helpCmd   = "help"
 	listCmd   = "list"
+	getCmd    = "get"
 	addCmd    = "add"
 	updateCmd = "update"
 	deleteCmd = "delete"
@@ -34,9 +35,28 @@ func listFunc(s string) string {
 	return strings.Join(res, "\n")
 }
 
+func getFunc(data string) string {
+	log.Printf("get command param: <%s>", data)
+	params := strings.Split(data, " ")
+	if len(params) != 1 {
+		return errors.Wrapf(BadArgument, "%d items: <%v>", len(params), params).Error()
+	}
+
+	id, err := tools.StringToUint(params[0])
+	if err != nil {
+		return err.Error()
+	}
+	bb, err := storage.Get(id)
+	if err != nil {
+		return err.Error()
+	}
+	return bb.String()
+}
+
 func helpFunc(s string) string {
 	return "/help - list commands\n" +
 		"/list - list of bus bookings\n" +
+		"/get <id> - get bus booking by id\n" +
 		"/add <route> <date> <seat> - add new bus booking with route, date and seat\n" +
 		"/update <id> <field> <new_value> - update field to new_value for bus by id\n" +
 		"/delete <id> - delete bus booking by id"
@@ -104,6 +124,7 @@ func deleteFunc(data string) string {
 func AddHandlers(c *commander.Commander) {
 	c.RegisterHandler(helpCmd, helpFunc)
 	c.RegisterHandler(listCmd, listFunc)
+	c.RegisterHandler(getCmd, getFunc)
 	c.RegisterHandler(addCmd, addFunc)
 	c.RegisterHandler(updateCmd, updateFunc)
 	c.RegisterHandler(deleteCmd, deleteFunc)
