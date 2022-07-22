@@ -5,12 +5,11 @@ import (
 	"log"
 	"strings"
 
-	"gitlab.ozon.dev/tigprog/homeword-1/internal/tools"
-
 	"github.com/pkg/errors"
-	"gitlab.ozon.dev/tigprog/homeword-1/internal/commander"
 
+	"gitlab.ozon.dev/tigprog/homeword-1/internal/commander"
 	"gitlab.ozon.dev/tigprog/homeword-1/internal/storage"
+	"gitlab.ozon.dev/tigprog/homeword-1/internal/tools"
 )
 
 const (
