@@ -47,6 +47,7 @@ func Update(id uint, field, newValue string) error {
 	if !ok {
 		return errors.Wrap(BusBookingNotExists, strconv.FormatUint(uint64(id), 10))
 	}
+
 	if field == "" {
 		return EmptyField
 	}

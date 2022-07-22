@@ -12,8 +12,6 @@ import (
 
 type CmdHandler func(string) string
 
-var UnknownCommand = errors.New("unknown command")
-
 type Commander struct {
 	bot   *tgbotapi.BotAPI
 	route map[string]CmdHandler
@@ -24,7 +22,6 @@ func Init() (*Commander, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "init tgbot")
 	}
-
 	bot.Debug = true
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
@@ -58,6 +55,7 @@ func (c *Commander) Run() error {
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 			msg.Text = fmt.Sprintf("you send <%v>", update.Message.Text)
 		}
+
 		_, err := c.bot.Send(msg)
 		if err != nil {
 			return errors.Wrap(err, "send tg message")
