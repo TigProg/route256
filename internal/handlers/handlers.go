@@ -16,6 +16,8 @@ const (
 	helpCmd = "help"
 	listCmd = "list"
 	addCmd  = "add"
+	// TODO updateCmd
+	deleteCmd = "delete"
 )
 
 var BadArgument = errors.New("bad argument")
@@ -35,7 +37,9 @@ func listFunc(s string) string {
 func helpFunc(s string) string {
 	return "/help - list commands\n" +
 		"/list - list data\n" +
-		"/add <route> <date> <seat> - add new bus booking with route, date and seat"
+		"/add <route> <date> <seat> - add new bus booking with route, date and seat\n" +
+		// "/list - list data\n" +
+		"/delete <id> - delete bus booking by id"
 }
 
 func addFunc(data string) string {
@@ -59,8 +63,29 @@ func addFunc(data string) string {
 	return fmt.Sprintf("bus booking %v added", bb)
 }
 
+// TODO updateFunc
+
+func deleteFunc(data string) string {
+	log.Printf("delete command param: <data>")
+	params := strings.Split(data, " ")
+	if len(params) != 1 {
+		return errors.Wrapf(BadArgument, "%d items: <%v>", len(params), params).Error()
+	}
+	idUint64, err := strconv.ParseUint(params[0], 10, 32)
+	if err != nil {
+		return err.Error()
+	}
+	err = storage.Delete(uint(idUint64))
+	if err != nil {
+		return err.Error()
+	}
+	return fmt.Sprintf("bus booking <%d> deleted", idUint64)
+}
+
 func AddHandlers(c *commander.Commander) {
 	c.RegisterHandler(helpCmd, helpFunc)
 	c.RegisterHandler(listCmd, listFunc)
 	c.RegisterHandler(addCmd, addFunc)
+	// TODO update
+	c.RegisterHandler(deleteCmd, deleteFunc)
 }

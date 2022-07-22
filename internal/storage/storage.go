@@ -9,7 +9,7 @@ import (
 
 var data map[uint]*BusBooking
 
-//var BusBookingNotExists = errors.New("bus booking dows not exist")
+var BusBookingNotExists = errors.New("bus booking dows not exist")
 var BusBookingExists = errors.New("bus booking exists")
 
 func init() {
@@ -44,11 +44,11 @@ func Add(bb *BusBooking) error {
 //	data[u.GetId()] = u
 //	return nil
 //}
-//
-//func Delete(id uint) error {
-//	if _, ok := data[id]; ok {
-//		delete(data, id)
-//		return nil
-//	}
-//	return errors.Wrap(UserNotExists, strconv.FormatUint(uint64(id), 10))
-//}
+
+func Delete(id uint) error {
+	if _, ok := data[id]; ok {
+		delete(data, id)
+		return nil
+	}
+	return errors.Wrap(BusBookingNotExists, strconv.FormatUint(uint64(id), 10))
+}
