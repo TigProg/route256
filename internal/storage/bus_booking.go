@@ -2,7 +2,10 @@ package storage
 
 import (
 	"fmt"
+	"time"
 )
+
+const dateFormat = "2006-01-02"
 
 var lastId = uint(0)
 
@@ -39,7 +42,9 @@ func (bb *BusBooking) SetRoute(route string) error {
 }
 
 func (bb *BusBooking) SetDate(dateString string) error {
-	// TODO add checker
+	if _, err := time.Parse(dateFormat, dateString); err != nil {
+		return fmt.Errorf("bad date <%v>", dateString)
+	}
 	bb.date = dateString
 	return nil
 }
