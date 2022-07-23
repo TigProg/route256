@@ -3,9 +3,9 @@ package storage
 import (
 	"fmt"
 	"time"
-)
 
-const dateFormat = "2006-01-02"
+	"gitlab.ozon.dev/tigprog/homeword-1/config"
+)
 
 var lastId = uint(0)
 
@@ -34,24 +34,26 @@ func NewBusBooking(route, dateString string, seat uint) (*BusBooking, error) {
 }
 
 func (bb *BusBooking) SetRoute(route string) error {
-	if len(route) < 4 || len(route) > 10 {
-		return fmt.Errorf("bad route <%v>", route)
+	if len(route) < config.BusBookingRouteMinLen || len(route) > config.BusBookingRouteMaxLen {
+		return fmt.Errorf("expected route len from <%d> to <%d>, got <%d>: <%v>",
+			config.BusBookingRouteMinLen, config.BusBookingRouteMaxLen, len(route), route)
 	}
 	bb.route = route
 	return nil
 }
 
 func (bb *BusBooking) SetDate(dateString string) error {
-	if _, err := time.Parse(dateFormat, dateString); err != nil {
-		return fmt.Errorf("bad date <%v>", dateString)
+	if _, err := time.Parse(config.DateFormat, dateString); err != nil {
+		return fmt.Errorf("expected correct date in format <%v>, got <%v>", config.DateFormat, dateString)
 	}
 	bb.date = dateString
 	return nil
 }
 
 func (bb *BusBooking) SetSeat(seat uint) error {
-	if seat == 0 || seat > 100 {
-		return fmt.Errorf("bad seat <%d>", seat)
+	if seat < config.BusBookingMinSeatNumber || seat > config.BusBookingMaxSeatNumber {
+		return fmt.Errorf("expected seat number from <%d> to <%d>, got <%d>",
+			config.BusBookingMinSeatNumber, config.BusBookingMaxSeatNumber, seat)
 	}
 	bb.seat = seat
 	return nil
