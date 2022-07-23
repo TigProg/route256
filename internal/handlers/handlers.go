@@ -25,12 +25,13 @@ var BadArgument = errors.New("bad argument")
 
 func listFunc(s string) string {
 	data := storage.List()
+	if len(data) == 0 {
+		return "<empty list>"
+	}
+
 	res := make([]string, 0, len(data))
 	for _, v := range data {
 		res = append(res, v.String())
-	}
-	if len(res) == 0 {
-		return "<empty list>"
 	}
 	return strings.Join(res, "\n")
 }

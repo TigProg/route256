@@ -35,8 +35,7 @@ func List() []*BusBooking {
 }
 
 func Get(id uint) (*BusBooking, error) {
-	bb, ok := data[id]
-	if ok {
+	if bb, ok := data[id]; ok {
 		return bb, nil
 	}
 	return nil, errors.Wrap(BusBookingNotExists, strconv.FormatUint(uint64(id), 10))
