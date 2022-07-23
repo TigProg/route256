@@ -22,7 +22,7 @@ func Init() (*Commander, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "init tgbot")
 	}
-	bot.Debug = true
+	bot.Debug = config.TelegramBotApiDebug
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
 	return &Commander{
@@ -37,7 +37,7 @@ func (c *Commander) RegisterHandler(cmd string, f CmdHandler) {
 
 func (c *Commander) Run() error {
 	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
+	u.Timeout = config.TelegramBotApiTimeout
 	updates := c.bot.GetUpdatesChan(u)
 
 	for update := range updates {

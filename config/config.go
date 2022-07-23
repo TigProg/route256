@@ -7,3 +7,6 @@ const DateFormat = "2006-01-02"
 
 const BusBookingMinSeatNumber = 1
 const BusBookingMaxSeatNumber = 100
+
+const TelegramBotApiDebug = true
+const TelegramBotApiTimeout = 60
