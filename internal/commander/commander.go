@@ -6,12 +6,11 @@ import (
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/pkg/errors"
-	"gitlab.ozon.dev/kshmatov/masterclass1/config"
+
+	"gitlab.ozon.dev/tigprog/homeword-1/config"
 )
 
 type CmdHandler func(string) string
-
-var UnknownCommand = errors.New("unknown command")
 
 type Commander struct {
 	bot   *tgbotapi.BotAPI
@@ -23,8 +22,7 @@ func Init() (*Commander, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "init tgbot")
 	}
-
-	bot.Debug = true
+	bot.Debug = config.TelegramBotApiDebug
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
 	return &Commander{
@@ -39,7 +37,7 @@ func (c *Commander) RegisterHandler(cmd string, f CmdHandler) {
 
 func (c *Commander) Run() error {
 	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
+	u.Timeout = config.TelegramBotApiTimeout
 	updates := c.bot.GetUpdatesChan(u)
 
 	for update := range updates {
@@ -57,6 +55,7 @@ func (c *Commander) Run() error {
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 			msg.Text = fmt.Sprintf("you send <%v>", update.Message.Text)
 		}
+
 		_, err := c.bot.Send(msg)
 		if err != nil {
 			return errors.Wrap(err, "send tg message")

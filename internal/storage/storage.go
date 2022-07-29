@@ -5,44 +5,73 @@ import (
 	"strconv"
 
 	"github.com/pkg/errors"
+
+	"gitlab.ozon.dev/tigprog/homeword-1/internal/tools"
 )
 
-var data map[uint]*User
+var data map[uint]*BusBooking
 
-var UserNotExists = errors.New("user dows not exist")
-var UserExists = errors.New("user exists")
+var BusBookingNotExists = errors.New("bus booking dows not exist")
+var BusBookingExists = errors.New("bus booking exists")
+
+var EmptyField = errors.New("field is empty")
+var FieldNotExist = errors.New("field does not exists")
 
 func init() {
 	log.Println("init storage")
-	data = make(map[uint]*User)
-	u, _ := NewUser("Kirill", "123456")
-	if err := Add(u); err != nil {
+	data = make(map[uint]*BusBooking)
+	bb, _ := NewBusBooking("ABCD45", "2022-01-01", uint(7))
+	if err := Add(bb); err != nil {
 		log.Panic(err)
 	}
 }
 
-func List() []*User {
-	res := make([]*User, 0, len(data))
+func List() []*BusBooking {
+	res := make([]*BusBooking, 0, len(data))
 	for _, v := range data {
 		res = append(res, v)
 	}
 	return res
 }
 
-func Add(u *User) error {
-	if _, ok := data[u.GetId()]; ok {
-		return errors.Wrap(UserExists, strconv.FormatUint(uint64(u.GetId()), 10))
+func Get(id uint) (*BusBooking, error) {
+	if bb, ok := data[id]; ok {
+		return bb, nil
 	}
-	data[u.GetId()] = u
+	return nil, errors.Wrap(BusBookingNotExists, strconv.FormatUint(uint64(id), 10))
+}
+
+func Add(bb *BusBooking) error {
+	if _, ok := data[bb.GetId()]; ok {
+		return errors.Wrap(BusBookingExists, strconv.FormatUint(uint64(bb.GetId()), 10))
+	}
+	data[bb.GetId()] = bb
 	return nil
 }
 
-func Update(u *User) error {
-	if _, ok := data[u.GetId()]; !ok {
-		return errors.Wrap(UserNotExists, strconv.FormatUint(uint64(u.GetId()), 10))
+func Update(id uint, field, newValue string) error {
+	bb, ok := data[id]
+	if !ok {
+		return errors.Wrap(BusBookingNotExists, strconv.FormatUint(uint64(id), 10))
 	}
-	data[u.GetId()] = u
-	return nil
+
+	if field == "" {
+		return EmptyField
+	}
+	switch field {
+	case "route":
+		return bb.SetRoute(newValue)
+	case "date":
+		return bb.SetDate(newValue)
+	case "seat":
+		seat, err := tools.StringToUint(newValue)
+		if err != nil {
+			return err
+		}
+		return bb.SetSeat(seat)
+	default:
+		return errors.Wrap(FieldNotExist, field)
+	}
 }
 
 func Delete(id uint) error {
@@ -50,5 +79,5 @@ func Delete(id uint) error {
 		delete(data, id)
 		return nil
 	}
-	return errors.Wrap(UserNotExists, strconv.FormatUint(uint64(id), 10))
+	return errors.Wrap(BusBookingNotExists, strconv.FormatUint(uint64(id), 10))
 }
