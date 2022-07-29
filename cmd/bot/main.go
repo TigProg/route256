@@ -3,16 +3,13 @@ package main
 import (
 	"log"
 
-	"gitlab.ozon.dev/tigprog/bus_booking/internal/commander"
-	"gitlab.ozon.dev/tigprog/bus_booking/internal/handlers"
+	"gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/commander"
+	"gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/handlers"
 )
 
 func main() {
 	log.Println("start main")
-	cmd, err := commander.Init()
-	if err != nil {
-		log.Panic(err)
-	}
+	cmd := commander.MustNew()
 	handlers.AddHandlers(cmd)
 
 	if err := cmd.Run(); err != nil {

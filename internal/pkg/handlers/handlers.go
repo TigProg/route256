@@ -6,10 +6,9 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-
-	"gitlab.ozon.dev/tigprog/bus_booking/internal/commander"
-	"gitlab.ozon.dev/tigprog/bus_booking/internal/storage"
-	"gitlab.ozon.dev/tigprog/bus_booking/internal/tools"
+	"gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/commander"
+	"gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/storage"
+	"gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/tools"
 )
 
 const (
@@ -122,7 +121,7 @@ func deleteFunc(data string) string {
 	return fmt.Sprintf("bus booking <%d> deleted", id)
 }
 
-func AddHandlers(c *commander.Commander) {
+func AddHandlers(c commander.Interface) {
 	c.RegisterHandler(helpCmd, helpFunc)
 	c.RegisterHandler(listCmd, listFunc)
 	c.RegisterHandler(getCmd, getFunc)

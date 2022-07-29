@@ -5,8 +5,7 @@ import (
 	"strconv"
 
 	"github.com/pkg/errors"
-
-	"gitlab.ozon.dev/tigprog/bus_booking/internal/tools"
+	"gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/tools"
 )
 
 var data map[uint]*BusBooking

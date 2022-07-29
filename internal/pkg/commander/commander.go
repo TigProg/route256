@@ -6,36 +6,40 @@ import (
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/pkg/errors"
-
-	"gitlab.ozon.dev/tigprog/bus_booking/config"
+	"gitlab.ozon.dev/tigprog/bus_booking/internal/config"
 )
 
 type CmdHandler func(string) string
 
-type Commander struct {
-	bot   *tgbotapi.BotAPI
-	route map[string]CmdHandler
+type Interface interface {
+	Run() error
+	RegisterHandler(cmd string, f CmdHandler)
 }
 
-func Init() (*Commander, error) {
+func MustNew() Interface {
 	bot, err := tgbotapi.NewBotAPI(config.ApiKey)
 	if err != nil {
-		return nil, errors.Wrap(err, "init tgbot")
+		log.Panic(errors.Wrap(err, "init tgbot"))
 	}
 	bot.Debug = config.TelegramBotApiDebug
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
-	return &Commander{
+	return &commander{
 		bot:   bot,
 		route: make(map[string]CmdHandler),
-	}, nil
+	}
 }
 
-func (c *Commander) RegisterHandler(cmd string, f CmdHandler) {
+type commander struct {
+	bot   *tgbotapi.BotAPI
+	route map[string]CmdHandler
+}
+
+func (c *commander) RegisterHandler(cmd string, f CmdHandler) {
 	c.route[cmd] = f
 }
 
-func (c *Commander) Run() error {
+func (c *commander) Run() error {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = config.TelegramBotApiTimeout
 	updates := c.bot.GetUpdatesChan(u)
