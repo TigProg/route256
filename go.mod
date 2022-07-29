@@ -1,4 +1,4 @@
-module gitlab.ozon.dev/tigprog/homeword-1
+module gitlab.ozon.dev/tigprog/bus_booking
 
 go 1.18
 

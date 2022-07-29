@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"gitlab.ozon.dev/tigprog/homeword-1/internal/commander"
-	"gitlab.ozon.dev/tigprog/homeword-1/internal/handlers"
+	"gitlab.ozon.dev/tigprog/bus_booking/internal/commander"
+	"gitlab.ozon.dev/tigprog/bus_booking/internal/handlers"
 )
 
 func main() {

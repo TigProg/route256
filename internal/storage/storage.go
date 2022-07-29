@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"gitlab.ozon.dev/tigprog/homeword-1/internal/tools"
+	"gitlab.ozon.dev/tigprog/bus_booking/internal/tools"
 )
 
 var data map[uint]*BusBooking

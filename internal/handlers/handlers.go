@@ -7,9 +7,9 @@ import (
 
 	"github.com/pkg/errors"
 
-	"gitlab.ozon.dev/tigprog/homeword-1/internal/commander"
-	"gitlab.ozon.dev/tigprog/homeword-1/internal/storage"
-	"gitlab.ozon.dev/tigprog/homeword-1/internal/tools"
+	"gitlab.ozon.dev/tigprog/bus_booking/internal/commander"
+	"gitlab.ozon.dev/tigprog/bus_booking/internal/storage"
+	"gitlab.ozon.dev/tigprog/bus_booking/internal/tools"
 )
 
 const (

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.ozon.dev/tigprog/homeword-1/config"
+	"gitlab.ozon.dev/tigprog/bus_booking/config"
 )
 
 var lastId = uint(0)
