@@ -35,14 +35,6 @@ func request_Admin_BusBookingList_0(ctx context.Context, marshaler runtime.Marsh
 	var protoReq BusBookingListRequest
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
 	msg, err := client.BusBookingList(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
@@ -51,14 +43,6 @@ func request_Admin_BusBookingList_0(ctx context.Context, marshaler runtime.Marsh
 func local_request_Admin_BusBookingList_0(ctx context.Context, marshaler runtime.Marshaler, server AdminServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq BusBookingListRequest
 	var metadata runtime.ServerMetadata
-
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
 
 	msg, err := server.BusBookingList(ctx, &protoReq)
 	return msg, metadata, err
@@ -99,15 +83,18 @@ func local_request_Admin_BusBookingAdd_0(ctx context.Context, marshaler runtime.
 
 }
 
+var (
+	filter_Admin_BusBookingGet_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
+
 func request_Admin_BusBookingGet_0(ctx context.Context, marshaler runtime.Marshaler, client AdminClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq BusBookingGetRequest
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_Admin_BusBookingGet_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -120,11 +107,10 @@ func local_request_Admin_BusBookingGet_0(ctx context.Context, marshaler runtime.
 	var protoReq BusBookingGetRequest
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_Admin_BusBookingGet_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -241,7 +227,7 @@ func local_request_Admin_BusBookingDelete_0(ctx context.Context, marshaler runti
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterAdminHandlerFromEndpoint instead.
 func RegisterAdminHandlerServer(ctx context.Context, mux *runtime.ServeMux, server AdminServer) error {
 
-	mux.Handle("POST", pattern_Admin_BusBookingList_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Admin_BusBookingList_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -249,7 +235,7 @@ func RegisterAdminHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/ozon.dev.mc2.api.Admin/BusBookingList", runtime.WithHTTPPathPattern("/ozon.dev.mc2.api.Admin/BusBookingList"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/ozon.dev.mc2.api.Admin/BusBookingList", runtime.WithHTTPPathPattern("/v1/bus_bookings"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -274,7 +260,7 @@ func RegisterAdminHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/ozon.dev.mc2.api.Admin/BusBookingAdd", runtime.WithHTTPPathPattern("/ozon.dev.mc2.api.Admin/BusBookingAdd"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/ozon.dev.mc2.api.Admin/BusBookingAdd", runtime.WithHTTPPathPattern("/v1/bus_booking"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -291,7 +277,7 @@ func RegisterAdminHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 
 	})
 
-	mux.Handle("POST", pattern_Admin_BusBookingGet_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Admin_BusBookingGet_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -299,7 +285,7 @@ func RegisterAdminHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/ozon.dev.mc2.api.Admin/BusBookingGet", runtime.WithHTTPPathPattern("/ozon.dev.mc2.api.Admin/BusBookingGet"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/ozon.dev.mc2.api.Admin/BusBookingGet", runtime.WithHTTPPathPattern("/v1/bus_booking"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -316,7 +302,7 @@ func RegisterAdminHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 
 	})
 
-	mux.Handle("POST", pattern_Admin_BusBookingChangeSeat_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("PUT", pattern_Admin_BusBookingChangeSeat_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -324,7 +310,7 @@ func RegisterAdminHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/ozon.dev.mc2.api.Admin/BusBookingChangeSeat", runtime.WithHTTPPathPattern("/ozon.dev.mc2.api.Admin/BusBookingChangeSeat"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/ozon.dev.mc2.api.Admin/BusBookingChangeSeat", runtime.WithHTTPPathPattern("/v1/bus_booking/set"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -341,7 +327,7 @@ func RegisterAdminHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 
 	})
 
-	mux.Handle("POST", pattern_Admin_BusBookingChangeDateSeat_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("PUT", pattern_Admin_BusBookingChangeDateSeat_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -349,7 +335,7 @@ func RegisterAdminHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/ozon.dev.mc2.api.Admin/BusBookingChangeDateSeat", runtime.WithHTTPPathPattern("/ozon.dev.mc2.api.Admin/BusBookingChangeDateSeat"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/ozon.dev.mc2.api.Admin/BusBookingChangeDateSeat", runtime.WithHTTPPathPattern("/v1/bus_booking"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -366,7 +352,7 @@ func RegisterAdminHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 
 	})
 
-	mux.Handle("POST", pattern_Admin_BusBookingDelete_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("DELETE", pattern_Admin_BusBookingDelete_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -374,7 +360,7 @@ func RegisterAdminHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/ozon.dev.mc2.api.Admin/BusBookingDelete", runtime.WithHTTPPathPattern("/ozon.dev.mc2.api.Admin/BusBookingDelete"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/ozon.dev.mc2.api.Admin/BusBookingDelete", runtime.WithHTTPPathPattern("/v1/bus_booking"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -432,13 +418,13 @@ func RegisterAdminHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc
 // "AdminClient" to call the correct interceptors.
 func RegisterAdminHandlerClient(ctx context.Context, mux *runtime.ServeMux, client AdminClient) error {
 
-	mux.Handle("POST", pattern_Admin_BusBookingList_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Admin_BusBookingList_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/ozon.dev.mc2.api.Admin/BusBookingList", runtime.WithHTTPPathPattern("/ozon.dev.mc2.api.Admin/BusBookingList"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/ozon.dev.mc2.api.Admin/BusBookingList", runtime.WithHTTPPathPattern("/v1/bus_bookings"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -460,7 +446,7 @@ func RegisterAdminHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/ozon.dev.mc2.api.Admin/BusBookingAdd", runtime.WithHTTPPathPattern("/ozon.dev.mc2.api.Admin/BusBookingAdd"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/ozon.dev.mc2.api.Admin/BusBookingAdd", runtime.WithHTTPPathPattern("/v1/bus_booking"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -476,13 +462,13 @@ func RegisterAdminHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 
 	})
 
-	mux.Handle("POST", pattern_Admin_BusBookingGet_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Admin_BusBookingGet_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/ozon.dev.mc2.api.Admin/BusBookingGet", runtime.WithHTTPPathPattern("/ozon.dev.mc2.api.Admin/BusBookingGet"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/ozon.dev.mc2.api.Admin/BusBookingGet", runtime.WithHTTPPathPattern("/v1/bus_booking"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -498,13 +484,13 @@ func RegisterAdminHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 
 	})
 
-	mux.Handle("POST", pattern_Admin_BusBookingChangeSeat_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("PUT", pattern_Admin_BusBookingChangeSeat_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/ozon.dev.mc2.api.Admin/BusBookingChangeSeat", runtime.WithHTTPPathPattern("/ozon.dev.mc2.api.Admin/BusBookingChangeSeat"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/ozon.dev.mc2.api.Admin/BusBookingChangeSeat", runtime.WithHTTPPathPattern("/v1/bus_booking/set"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -520,13 +506,13 @@ func RegisterAdminHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 
 	})
 
-	mux.Handle("POST", pattern_Admin_BusBookingChangeDateSeat_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("PUT", pattern_Admin_BusBookingChangeDateSeat_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/ozon.dev.mc2.api.Admin/BusBookingChangeDateSeat", runtime.WithHTTPPathPattern("/ozon.dev.mc2.api.Admin/BusBookingChangeDateSeat"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/ozon.dev.mc2.api.Admin/BusBookingChangeDateSeat", runtime.WithHTTPPathPattern("/v1/bus_booking"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -542,13 +528,13 @@ func RegisterAdminHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 
 	})
 
-	mux.Handle("POST", pattern_Admin_BusBookingDelete_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("DELETE", pattern_Admin_BusBookingDelete_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/ozon.dev.mc2.api.Admin/BusBookingDelete", runtime.WithHTTPPathPattern("/ozon.dev.mc2.api.Admin/BusBookingDelete"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/ozon.dev.mc2.api.Admin/BusBookingDelete", runtime.WithHTTPPathPattern("/v1/bus_booking"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -568,17 +554,17 @@ func RegisterAdminHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 }
 
 var (
-	pattern_Admin_BusBookingList_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"ozon.dev.mc2.api.Admin", "BusBookingList"}, ""))
+	pattern_Admin_BusBookingList_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "bus_bookings"}, ""))
 
-	pattern_Admin_BusBookingAdd_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"ozon.dev.mc2.api.Admin", "BusBookingAdd"}, ""))
+	pattern_Admin_BusBookingAdd_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "bus_booking"}, ""))
 
-	pattern_Admin_BusBookingGet_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"ozon.dev.mc2.api.Admin", "BusBookingGet"}, ""))
+	pattern_Admin_BusBookingGet_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "bus_booking"}, ""))
 
-	pattern_Admin_BusBookingChangeSeat_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"ozon.dev.mc2.api.Admin", "BusBookingChangeSeat"}, ""))
+	pattern_Admin_BusBookingChangeSeat_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "bus_booking", "set"}, ""))
 
-	pattern_Admin_BusBookingChangeDateSeat_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"ozon.dev.mc2.api.Admin", "BusBookingChangeDateSeat"}, ""))
+	pattern_Admin_BusBookingChangeDateSeat_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "bus_booking"}, ""))
 
-	pattern_Admin_BusBookingDelete_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"ozon.dev.mc2.api.Admin", "BusBookingDelete"}, ""))
+	pattern_Admin_BusBookingDelete_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "bus_booking"}, ""))
 )
 
 var (

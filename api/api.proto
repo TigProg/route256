@@ -3,13 +3,43 @@ syntax = "proto3";
 package ozon.dev.mc2.api;
 option go_package = "gitlab.ozon.dev/tigprog/bus_booking/pkg/api;api";
 
+import "google/api/annotations.proto";
+
 service Admin {
-  rpc BusBookingList(BusBookingListRequest) returns (BusBookingListResponse) {}
-  rpc BusBookingAdd(BusBookingAddRequest) returns (BusBookingAddResponse) {}
-  rpc BusBookingGet(BusBookingGetRequest) returns (BusBookingGetResponse) {}
-  rpc BusBookingChangeSeat(BusBookingChangeSeatRequest) returns (BusBookingChangeSeatResponse) {}
-  rpc BusBookingChangeDateSeat(BusBookingChangeDateSeatRequest) returns (BusBookingChangeDateSeatResponse) {}
-  rpc BusBookingDelete(BusBookingDeleteRequest) returns (BusBookingDeleteResponse) {}
+  rpc BusBookingList(BusBookingListRequest) returns (BusBookingListResponse) {
+    option (google.api.http) = {
+      get: "/v1/bus_bookings"
+    };
+  }
+  rpc BusBookingAdd(BusBookingAddRequest) returns (BusBookingAddResponse) {
+    option (google.api.http) = {
+      post: "/v1/bus_booking"
+      body: "*"
+    };
+  }
+  rpc BusBookingGet(BusBookingGetRequest) returns (BusBookingGetResponse) {
+    option (google.api.http) = {
+      get: "/v1/bus_booking"
+    };
+  }
+  rpc BusBookingChangeSeat(BusBookingChangeSeatRequest) returns (BusBookingChangeSeatResponse) {
+    option (google.api.http) = {  // TODO
+      put: "/v1/bus_booking/set"
+      body: "*"
+    };
+  }
+  rpc BusBookingChangeDateSeat(BusBookingChangeDateSeatRequest) returns (BusBookingChangeDateSeatResponse) {
+    option (google.api.http) = {  // TODO
+      put: "/v1/bus_booking"
+      body: "*"
+    };
+  }
+  rpc BusBookingDelete(BusBookingDeleteRequest) returns (BusBookingDeleteResponse) {
+    option (google.api.http) = {
+      delete: "/v1/bus_booking"
+      body: "*"
+    };
+  }
 }
 
 message BusBooking {
