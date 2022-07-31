@@ -1,8 +1,8 @@
 package local
 
-// TODO add mutex
-
 import (
+	"sync"
+
 	"github.com/pkg/errors"
 	cachePkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/cache"
 	"gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/models"
@@ -15,17 +15,22 @@ var (
 
 func New() cachePkg.Interface {
 	return &cache{
+		mu:     sync.RWMutex{},
 		nextId: 1,
 		data:   map[uint]*models.BusBooking{},
 	}
 }
 
 type cache struct {
+	mu     sync.RWMutex
 	nextId uint
 	data   map[uint]*models.BusBooking
 }
 
 func (c *cache) List() []models.BusBooking {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
 	result := make([]models.BusBooking, 0, len(c.data))
 	for _, bb := range c.data {
 		result = append(result, *bb)
@@ -34,6 +39,9 @@ func (c *cache) List() []models.BusBooking {
 }
 
 func (c *cache) Add(bb models.BusBooking) (uint, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	if existedId, err := c.reverseSearch(bb.Route, bb.Date, bb.Seat); err == nil {
 		return 0, errors.Wrapf(ErrBusBookingAlreadyExists, "%d", existedId)
 	}
@@ -47,6 +55,9 @@ func (c *cache) Add(bb models.BusBooking) (uint, error) {
 }
 
 func (c *cache) Get(id uint) (*models.BusBooking, error) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
 	if bb, ok := c.data[id]; ok {
 		return bb, nil
 	}
@@ -54,6 +65,9 @@ func (c *cache) Get(id uint) (*models.BusBooking, error) {
 }
 
 func (c *cache) ChangeSeat(id uint, newSeat uint) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	bb, ok := c.data[id]
 	if !ok {
 		return errors.Wrapf(ErrBusBookingNotExists, "%d", id)
@@ -70,6 +84,9 @@ func (c *cache) ChangeSeat(id uint, newSeat uint) error {
 }
 
 func (c *cache) ChangeDateSeat(id uint, newDate string, newSeat uint) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	bb, ok := c.data[id]
 	if !ok {
 		return errors.Wrapf(ErrBusBookingNotExists, "%d", id)
@@ -87,6 +104,9 @@ func (c *cache) ChangeDateSeat(id uint, newDate string, newSeat uint) error {
 }
 
 func (c *cache) Delete(id uint) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	if _, ok := c.data[id]; ok {
 		delete(c.data, id)
 		return nil
