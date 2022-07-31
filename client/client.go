@@ -7,6 +7,7 @@ import (
 	pb "gitlab.ozon.dev/tigprog/bus_booking/pkg/api"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 )
 
 func main() {
@@ -18,6 +19,7 @@ func main() {
 	client := pb.NewAdminClient(conns)
 
 	ctx := context.Background()
+	ctx = metadata.AppendToOutgoingContext(ctx, "custom", "hello")
 
 	// test gRPC
 
