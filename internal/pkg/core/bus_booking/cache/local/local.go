@@ -4,11 +4,10 @@ import (
 	"sync"
 
 	"github.com/pkg/errors"
+	configPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/config"
 	cachePkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/cache"
 	"gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/models"
 )
-
-const poolSize = 10
 
 var (
 	ErrBusBookingNotExists     = errors.New("bus booking does not exist")
@@ -20,7 +19,7 @@ func New() cachePkg.Interface {
 		mu:     sync.RWMutex{},
 		nextId: 1,
 		data:   map[uint]*models.BusBooking{},
-		poolCh: make(chan struct{}, poolSize),
+		poolCh: make(chan struct{}, configPkg.LocalCachePoolSize),
 	}
 }
 

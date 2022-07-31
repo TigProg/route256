@@ -4,13 +4,14 @@ import (
 	"context"
 	"log"
 
+	configPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/config"
 	pb "gitlab.ozon.dev/tigprog/bus_booking/pkg/api"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
-	conns, err := grpc.Dial(":8081", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conns, err := grpc.Dial(configPkg.GRPCClientTarget, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		panic(err)
 	}

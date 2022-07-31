@@ -7,6 +7,7 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	apiPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/api"
+	configPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/config"
 	bbPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking"
 	pb "gitlab.ozon.dev/tigprog/bus_booking/pkg/api"
 	"google.golang.org/grpc"
@@ -14,7 +15,7 @@ import (
 )
 
 func runGRPCServer(bb bbPkg.Interface) {
-	listener, err := net.Listen("tcp", ":8081")
+	listener, err := net.Listen("tcp", configPkg.GRPCServerAddress)
 	if err != nil {
 		panic(err)
 	}
@@ -35,11 +36,11 @@ func runREST() {
 
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-	if err := pb.RegisterAdminHandlerFromEndpoint(ctx, mux, ":8081", opts); err != nil {
+	if err := pb.RegisterAdminHandlerFromEndpoint(ctx, mux, configPkg.GRPCServerAddress, opts); err != nil {
 		panic(err)
 	}
 
-	if err := http.ListenAndServe(":8080", mux); err != nil {
+	if err := http.ListenAndServe(configPkg.RESTServerAddress, mux); err != nil {
 		panic(err)
 	}
 }
