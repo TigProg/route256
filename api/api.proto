@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package ozon.dev.mc2.api;
+option go_package = "gitlab.ozon.dev/tigprog/bus_booking/pkg/api;api";
+
+service Admin {
+  rpc BusBookingList(BusBookingListRequest) returns (BusBookingListResponse) {}
+  rpc BusBookingAdd(BusBookingAddRequest) returns (BusBookingAddResponse) {}
+  rpc BusBookingGet(BusBookingGetRequest) returns (BusBookingGetResponse) {}
+  rpc BusBookingChangeSeat(BusBookingChangeSeatRequest) returns (BusBookingChangeSeatResponse) {}
+  rpc BusBookingChangeDateSeat(BusBookingChangeDateSeatRequest) returns (BusBookingChangeDateSeatResponse) {}
+  rpc BusBookingDelete(BusBookingDeleteRequest) returns (BusBookingDeleteResponse) {}
+}
+
+message BusBooking {
+  uint32 id    = 1;
+  string route = 2;
+  string date  = 3;
+  uint32 seat  = 4;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// BusBookingList endpoint messages
+// ---------------------------------------------------------------------------------------------------------------------
+
+message BusBookingListRequest {}
+message BusBookingListResponse {
+  repeated BusBooking bus_bookings = 1;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// BusBookingAdd endpoint messages
+// ---------------------------------------------------------------------------------------------------------------------
+
+message BusBookingAddRequest {
+  string route = 1;
+  string date  = 2;
+  uint32 seat  = 3;
+}
+message BusBookingAddResponse {
+  uint32 id = 1;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// BusBookingGet endpoint messages
+// ---------------------------------------------------------------------------------------------------------------------
+
+message BusBookingGetRequest {
+  uint32 id = 1;
+}
+message BusBookingGetResponse {
+  BusBooking bus_booking = 1;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// BusBookingChangeSeat endpoint messages
+// ---------------------------------------------------------------------------------------------------------------------
+
+message BusBookingChangeSeatRequest {
+  uint32 id   = 1;
+  uint32 seat = 2;
+}
+message BusBookingChangeSeatResponse {}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// BusBookingChangeDateSeat endpoint messages
+// ---------------------------------------------------------------------------------------------------------------------
+
+message BusBookingChangeDateSeatRequest {
+  uint32 id   = 1;
+  string date = 2;
+  uint32 seat = 3;
+}
+message BusBookingChangeDateSeatResponse {}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// BusBookingDelete endpoint messages
+// ---------------------------------------------------------------------------------------------------------------------
+
+message BusBookingDeleteRequest {
+  uint32 id = 1;
+}
+message BusBookingDeleteResponse {}
