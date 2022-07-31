@@ -2,10 +2,8 @@ package api
 
 import (
 	"context"
-	"log"
 
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
 	bbPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking"
@@ -25,11 +23,6 @@ type implementation struct {
 }
 
 func (i *implementation) BusBookingList(ctx context.Context, in *pb.BusBookingListRequest) (*pb.BusBookingListResponse, error) {
-	ctxData, ok := metadata.FromIncomingContext(ctx)
-	if ok {
-		log.Println(ctxData.Get("custom"))
-	}
-
 	bbs := i.busBooking.List()
 
 	result := make([]*pb.BusBooking, 0, len(bbs))

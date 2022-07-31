@@ -33,9 +33,7 @@ func runREST() {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	mux := runtime.NewServeMux(
-		runtime.WithIncomingHeaderMatcher(headerMatcherREST),
-	)
+	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	if err := pb.RegisterAdminHandlerFromEndpoint(ctx, mux, ":8081", opts); err != nil {
 		panic(err)
@@ -43,14 +41,5 @@ func runREST() {
 
 	if err := http.ListenAndServe(":8080", mux); err != nil {
 		panic(err)
-	}
-}
-
-func headerMatcherREST(key string) (string, bool) {
-	switch key {
-	case "Custom":
-		return key, true
-	default:
-		return key, false
 	}
 }
