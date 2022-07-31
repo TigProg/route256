@@ -8,6 +8,8 @@ import (
 	"gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/models"
 )
 
+const poolSize = 10
+
 var (
 	ErrBusBookingNotExists     = errors.New("bus booking does not exist")
 	ErrBusBookingAlreadyExists = errors.New("bus booking already exists")
@@ -18,6 +20,7 @@ func New() cachePkg.Interface {
 		mu:     sync.RWMutex{},
 		nextId: 1,
 		data:   map[uint]*models.BusBooking{},
+		poolCh: make(chan struct{}, poolSize),
 	}
 }
 
@@ -25,11 +28,16 @@ type cache struct {
 	mu     sync.RWMutex
 	nextId uint
 	data   map[uint]*models.BusBooking
+	poolCh chan struct{}
 }
 
 func (c *cache) List() []models.BusBooking {
+	c.poolCh <- struct{}{}
 	c.mu.RLock()
-	defer c.mu.RUnlock()
+	defer func() {
+		c.mu.RUnlock()
+		<-c.poolCh
+	}()
 
 	result := make([]models.BusBooking, 0, len(c.data))
 	for _, bb := range c.data {
@@ -39,8 +47,12 @@ func (c *cache) List() []models.BusBooking {
 }
 
 func (c *cache) Add(bb models.BusBooking) (uint, error) {
+	c.poolCh <- struct{}{}
 	c.mu.Lock()
-	defer c.mu.Unlock()
+	defer func() {
+		c.mu.Unlock()
+		<-c.poolCh
+	}()
 
 	if existedId, err := c.reverseSearch(bb.Route, bb.Date, bb.Seat); err == nil {
 		return 0, errors.Wrapf(ErrBusBookingAlreadyExists, "%d", existedId)
@@ -55,8 +67,12 @@ func (c *cache) Add(bb models.BusBooking) (uint, error) {
 }
 
 func (c *cache) Get(id uint) (*models.BusBooking, error) {
+	c.poolCh <- struct{}{}
 	c.mu.RLock()
-	defer c.mu.RUnlock()
+	defer func() {
+		c.mu.RUnlock()
+		<-c.poolCh
+	}()
 
 	if bb, ok := c.data[id]; ok {
 		return bb, nil
@@ -65,8 +81,12 @@ func (c *cache) Get(id uint) (*models.BusBooking, error) {
 }
 
 func (c *cache) ChangeSeat(id uint, newSeat uint) error {
+	c.poolCh <- struct{}{}
 	c.mu.Lock()
-	defer c.mu.Unlock()
+	defer func() {
+		c.mu.Unlock()
+		<-c.poolCh
+	}()
 
 	bb, ok := c.data[id]
 	if !ok {
@@ -84,8 +104,12 @@ func (c *cache) ChangeSeat(id uint, newSeat uint) error {
 }
 
 func (c *cache) ChangeDateSeat(id uint, newDate string, newSeat uint) error {
+	c.poolCh <- struct{}{}
 	c.mu.Lock()
-	defer c.mu.Unlock()
+	defer func() {
+		c.mu.Unlock()
+		<-c.poolCh
+	}()
 
 	bb, ok := c.data[id]
 	if !ok {
@@ -104,8 +128,12 @@ func (c *cache) ChangeDateSeat(id uint, newDate string, newSeat uint) error {
 }
 
 func (c *cache) Delete(id uint) error {
+	c.poolCh <- struct{}{}
 	c.mu.Lock()
-	defer c.mu.Unlock()
+	defer func() {
+		c.mu.Unlock()
+		<-c.poolCh
+	}()
 
 	if _, ok := c.data[id]; ok {
 		delete(c.data, id)
