@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	ErrBusBookingNotExists = errors.New("bus booking does not exist")
-	//ErrBusBookingExists    = errors.New("bus booking exists")
+	ErrBusBookingNotExists     = errors.New("bus booking does not exist")
+	ErrBusBookingAlreadyExists = errors.New("bus booking already exists")
 )
 
 func New() cachePkg.Interface {
@@ -34,11 +34,14 @@ func (c *cache) List() []models.BusBooking {
 }
 
 func (c *cache) Add(bb models.BusBooking) (uint, error) {
-	// TODO add reverse search
+	if existedId, err := c.reverseSearch(bb.Route, bb.Date, bb.Seat); err == nil {
+		return 0, errors.Wrapf(ErrBusBookingAlreadyExists, "%d", existedId)
+	}
 
 	var id = c.nextId
 	bb.Id = id
 	c.data[id] = &bb
+
 	c.nextId++
 	return id, nil
 }
@@ -59,7 +62,9 @@ func (c *cache) ChangeSeat(id uint, newSeat uint) error {
 		return nil // for idempotency
 	}
 
-	// TODO add reverse search
+	if existedId, err := c.reverseSearch(bb.Route, bb.Date, newSeat); err == nil {
+		return errors.Wrapf(ErrBusBookingAlreadyExists, "%d", existedId)
+	}
 	bb.Seat = newSeat
 	return nil
 }
@@ -73,7 +78,9 @@ func (c *cache) ChangeDateSeat(id uint, newDate string, newSeat uint) error {
 		return nil // for idempotency
 	}
 
-	// TODO add reverse search
+	if existedId, err := c.reverseSearch(bb.Route, newDate, newSeat); err == nil {
+		return errors.Wrapf(ErrBusBookingAlreadyExists, "%d", existedId)
+	}
 	bb.Seat = newSeat
 	bb.Date = newDate
 	return nil
@@ -85,4 +92,14 @@ func (c *cache) Delete(id uint) error {
 		return nil
 	}
 	return errors.Wrapf(ErrBusBookingNotExists, "%d", id)
+}
+
+// reverseSearch - not thread-safe
+func (c *cache) reverseSearch(route string, date string, seat uint) (uint, error) {
+	for _, bb := range c.data {
+		if bb.Route == route && bb.Date == date && bb.Seat == seat {
+			return bb.Id, nil
+		}
+	}
+	return 0, ErrBusBookingNotExists
 }

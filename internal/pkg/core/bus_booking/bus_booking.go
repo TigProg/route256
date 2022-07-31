@@ -52,18 +52,18 @@ func (c *core) Add(bb models.BusBooking) (uint, error) {
 	if err := checkCorrectSeat(bb.Seat); err != nil {
 		return 0, err
 	}
-	return c.cache.Add(bb) // TODO
+	return c.cache.Add(bb)
 }
 
 func (c *core) Get(id uint) (*models.BusBooking, error) {
-	return c.cache.Get(id) // TODO
+	return c.cache.Get(id)
 }
 
 func (c *core) ChangeSeat(id uint, newSeat uint) error {
 	if err := checkCorrectSeat(newSeat); err != nil {
 		return err
 	}
-	return c.cache.ChangeSeat(id, newSeat) // TODO
+	return c.cache.ChangeSeat(id, newSeat)
 }
 
 func (c *core) ChangeDateSeat(id uint, newDate string, newSeat uint) error {
@@ -73,11 +73,11 @@ func (c *core) ChangeDateSeat(id uint, newDate string, newSeat uint) error {
 	if err := checkCorrectSeat(newSeat); err != nil {
 		return err
 	}
-	return c.cache.ChangeDateSeat(id, newDate, newSeat) // TODO
+	return c.cache.ChangeDateSeat(id, newDate, newSeat)
 }
 
 func (c *core) Delete(id uint) error {
-	return c.cache.Delete(id) // TODO
+	return c.cache.Delete(id)
 }
 
 func checkCorrectRoute(route string) error {
