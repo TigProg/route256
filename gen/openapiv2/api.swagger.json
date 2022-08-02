@@ -18,6 +18,7 @@
   "paths": {
     "/v1/bus_booking": {
       "delete": {
+        "summary": "delete bus booking",
         "operationId": "Admin_BusBookingDelete",
         "responses": {
           "200": {
@@ -48,6 +49,7 @@
         ]
       },
       "post": {
+        "summary": "create new bus booking (if it is not booked)",
         "operationId": "Admin_BusBookingAdd",
         "responses": {
           "200": {
@@ -78,6 +80,7 @@
         ]
       },
       "put": {
+        "summary": "update seat and date of bus booking",
         "operationId": "Admin_BusBookingChangeDateSeat",
         "responses": {
           "200": {
@@ -110,6 +113,7 @@
     },
     "/v1/bus_booking/seat": {
       "put": {
+        "summary": "update seat of bus booking",
         "operationId": "Admin_BusBookingChangeSeat",
         "responses": {
           "200": {
@@ -142,6 +146,7 @@
     },
     "/v1/bus_booking/{id}": {
       "get": {
+        "summary": "get bus booking",
         "operationId": "Admin_BusBookingGet",
         "responses": {
           "200": {
@@ -173,6 +178,7 @@
     },
     "/v1/bus_bookings": {
       "get": {
+        "summary": "return all bus bookings",
         "operationId": "Admin_BusBookingList",
         "responses": {
           "200": {

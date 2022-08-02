@@ -22,11 +22,17 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AdminClient interface {
+	// return all bus bookings
 	BusBookingList(ctx context.Context, in *BusBookingListRequest, opts ...grpc.CallOption) (*BusBookingListResponse, error)
+	// create new bus booking (if it is not booked)
 	BusBookingAdd(ctx context.Context, in *BusBookingAddRequest, opts ...grpc.CallOption) (*BusBookingAddResponse, error)
+	// get bus booking
 	BusBookingGet(ctx context.Context, in *BusBookingGetRequest, opts ...grpc.CallOption) (*BusBookingGetResponse, error)
+	// update seat of bus booking
 	BusBookingChangeSeat(ctx context.Context, in *BusBookingChangeSeatRequest, opts ...grpc.CallOption) (*BusBookingChangeSeatResponse, error)
+	// update seat and date of bus booking
 	BusBookingChangeDateSeat(ctx context.Context, in *BusBookingChangeDateSeatRequest, opts ...grpc.CallOption) (*BusBookingChangeDateSeatResponse, error)
+	// delete bus booking
 	BusBookingDelete(ctx context.Context, in *BusBookingDeleteRequest, opts ...grpc.CallOption) (*BusBookingDeleteResponse, error)
 }
 
@@ -96,11 +102,17 @@ func (c *adminClient) BusBookingDelete(ctx context.Context, in *BusBookingDelete
 // All implementations must embed UnimplementedAdminServer
 // for forward compatibility
 type AdminServer interface {
+	// return all bus bookings
 	BusBookingList(context.Context, *BusBookingListRequest) (*BusBookingListResponse, error)
+	// create new bus booking (if it is not booked)
 	BusBookingAdd(context.Context, *BusBookingAddRequest) (*BusBookingAddResponse, error)
+	// get bus booking
 	BusBookingGet(context.Context, *BusBookingGetRequest) (*BusBookingGetResponse, error)
+	// update seat of bus booking
 	BusBookingChangeSeat(context.Context, *BusBookingChangeSeatRequest) (*BusBookingChangeSeatResponse, error)
+	// update seat and date of bus booking
 	BusBookingChangeDateSeat(context.Context, *BusBookingChangeDateSeatRequest) (*BusBookingChangeDateSeatResponse, error)
+	// delete bus booking
 	BusBookingDelete(context.Context, *BusBookingDeleteRequest) (*BusBookingDeleteResponse, error)
 	mustEmbedUnimplementedAdminServer()
 }
