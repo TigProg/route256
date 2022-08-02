@@ -24,7 +24,7 @@ service Admin {
   }
   rpc BusBookingChangeSeat(BusBookingChangeSeatRequest) returns (BusBookingChangeSeatResponse) {
     option (google.api.http) = {  // TODO
-      put: "/v1/bus_booking/set"
+      put: "/v1/bus_booking/seat"
       body: "*"
     };
   }

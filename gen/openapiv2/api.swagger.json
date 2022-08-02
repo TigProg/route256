@@ -137,7 +137,7 @@
         ]
       }
     },
-    "/v1/bus_booking/set": {
+    "/v1/bus_booking/seat": {
       "put": {
         "operationId": "Admin_BusBookingChangeSeat",
         "responses": {
