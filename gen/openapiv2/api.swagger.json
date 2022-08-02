@@ -17,35 +17,6 @@
   ],
   "paths": {
     "/v1/bus_booking": {
-      "get": {
-        "operationId": "Admin_BusBookingGet",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/apiBusBookingGetResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int64"
-          }
-        ],
-        "tags": [
-          "Admin"
-        ]
-      },
       "delete": {
         "operationId": "Admin_BusBookingDelete",
         "responses": {
@@ -162,6 +133,37 @@
             "schema": {
               "$ref": "#/definitions/apiBusBookingChangeSeatRequest"
             }
+          }
+        ],
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/v1/bus_booking/{id}": {
+      "get": {
+        "operationId": "Admin_BusBookingGet",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiBusBookingGetResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
           }
         ],
         "tags": [

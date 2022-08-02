@@ -19,7 +19,7 @@ service Admin {
   }
   rpc BusBookingGet(BusBookingGetRequest) returns (BusBookingGetResponse) {
     option (google.api.http) = {
-      get: "/v1/bus_booking"
+      get: "/v1/bus_booking/{id}"
     };
   }
   rpc BusBookingChangeSeat(BusBookingChangeSeatRequest) returns (BusBookingChangeSeatResponse) {
