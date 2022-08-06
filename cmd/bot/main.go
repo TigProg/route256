@@ -1,21 +1,11 @@
 package main
 
-import (
-	"log"
-
-	"gitlab.ozon.dev/tigprog/homeword-1/internal/commander"
-	"gitlab.ozon.dev/tigprog/homeword-1/internal/handlers"
-)
+import bbPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking"
 
 func main() {
-	log.Println("start main")
-	cmd, err := commander.Init()
-	if err != nil {
-		log.Panic(err)
-	}
-	handlers.AddHandlers(cmd)
+	bb := bbPkg.New()
 
-	if err := cmd.Run(); err != nil {
-		log.Panic(err)
-	}
+	go runBot(bb)
+	go runREST()
+	runGRPCServer(bb)
 }
