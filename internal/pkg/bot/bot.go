@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -53,7 +54,8 @@ func (c *commander) Run() error {
 			if cmd, ok := c.route[cmdName]; ok {
 				cmdArgs := update.Message.CommandArguments()
 				log.Printf("Run [%s] command with args: <%s>", cmdName, cmdArgs)
-				msg.Text = cmd.Process(cmdArgs)
+				ctx := context.TODO() // TODO
+				msg.Text = cmd.Process(ctx, cmdArgs)
 			} else {
 				log.Printf("Get unknown command: <%s>", cmdName)
 				msg.Text = "Unknown command, try /help"

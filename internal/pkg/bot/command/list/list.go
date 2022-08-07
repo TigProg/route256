@@ -1,6 +1,7 @@
 package list
 
 import (
+	"context"
 	"fmt"
 
 	commandPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/bot/command"
@@ -25,8 +26,8 @@ func (c *command) Description() string {
 	return "list of bus bookings"
 }
 
-func (c *command) Process(_ string) string {
-	bbs := c.bb.List()
+func (c *command) Process(ctx context.Context, _ string) string {
+	bbs := c.bb.List(ctx)
 	result := fmt.Sprint("id: route / date / seat")
 
 	for _, bb := range bbs {

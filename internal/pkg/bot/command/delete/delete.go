@@ -1,6 +1,7 @@
 package delete
 
 import (
+	"context"
 	"fmt"
 
 	commandPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/bot/command"
@@ -26,7 +27,7 @@ func (c *command) Description() string {
 	return "delete bus booking by id"
 }
 
-func (c *command) Process(args string) string {
+func (c *command) Process(ctx context.Context, args string) string {
 	params, err := commandPkg.CheckArguments(args, 1)
 	if err != nil {
 		return err.Error()
@@ -37,7 +38,7 @@ func (c *command) Process(args string) string {
 		return err.Error()
 	}
 
-	if err := c.bb.Delete(id); err != nil {
+	if err := c.bb.Delete(ctx, id); err != nil {
 		return err.Error()
 	}
 	return fmt.Sprintf("[SUCCESS]\nBus booking seat deleted successfully\nbooking number: %d", id)

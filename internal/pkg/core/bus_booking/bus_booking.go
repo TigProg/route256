@@ -1,6 +1,7 @@
 package bus_booking
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -20,12 +21,12 @@ const (
 )
 
 type Interface interface {
-	List() []models.BusBooking
-	Add(bb models.BusBooking) (uint, error)
-	Get(id uint) (*models.BusBooking, error)
-	ChangeSeat(id uint, newSeat uint) error
-	ChangeDateSeat(id uint, date string, newSeat uint) error
-	Delete(id uint) error
+	List(ctx context.Context) []models.BusBooking
+	Add(ctx context.Context, bb models.BusBooking) (uint, error)
+	Get(ctx context.Context, id uint) (*models.BusBooking, error)
+	ChangeSeat(ctx context.Context, id uint, newSeat uint) error
+	ChangeDateSeat(ctx context.Context, id uint, date string, newSeat uint) error
+	Delete(ctx context.Context, id uint) error
 }
 
 func New() Interface {
@@ -38,11 +39,11 @@ type core struct {
 	cache cachePkg.Interface
 }
 
-func (c *core) List() []models.BusBooking {
+func (c *core) List(ctx context.Context) []models.BusBooking {
 	return c.cache.List()
 }
 
-func (c *core) Add(bb models.BusBooking) (uint, error) {
+func (c *core) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
 	if err := checkCorrectRoute(bb.Route); err != nil {
 		return 0, err
 	}
@@ -55,18 +56,18 @@ func (c *core) Add(bb models.BusBooking) (uint, error) {
 	return c.cache.Add(bb)
 }
 
-func (c *core) Get(id uint) (*models.BusBooking, error) {
+func (c *core) Get(ctx context.Context, id uint) (*models.BusBooking, error) {
 	return c.cache.Get(id)
 }
 
-func (c *core) ChangeSeat(id uint, newSeat uint) error {
+func (c *core) ChangeSeat(ctx context.Context, id uint, newSeat uint) error {
 	if err := checkCorrectSeat(newSeat); err != nil {
 		return err
 	}
 	return c.cache.ChangeSeat(id, newSeat)
 }
 
-func (c *core) ChangeDateSeat(id uint, newDate string, newSeat uint) error {
+func (c *core) ChangeDateSeat(ctx context.Context, id uint, newDate string, newSeat uint) error {
 	if err := checkCorrectDate(newDate); err != nil {
 		return err
 	}
@@ -76,7 +77,7 @@ func (c *core) ChangeDateSeat(id uint, newDate string, newSeat uint) error {
 	return c.cache.ChangeDateSeat(id, newDate, newSeat)
 }
 
-func (c *core) Delete(id uint) error {
+func (c *core) Delete(ctx context.Context, id uint) error {
 	return c.cache.Delete(id)
 }
 

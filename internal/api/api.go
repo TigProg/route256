@@ -23,7 +23,7 @@ type implementation struct {
 }
 
 func (i *implementation) BusBookingList(ctx context.Context, in *pb.BusBookingListRequest) (*pb.BusBookingListResponse, error) {
-	bbs := i.busBooking.List()
+	bbs := i.busBooking.List(ctx)
 
 	result := make([]*pb.BusBooking, 0, len(bbs))
 	for _, bb := range bbs {
@@ -40,7 +40,7 @@ func (i *implementation) BusBookingList(ctx context.Context, in *pb.BusBookingLi
 }
 
 func (i *implementation) BusBookingAdd(ctx context.Context, in *pb.BusBookingAddRequest) (*pb.BusBookingAddResponse, error) {
-	id, err := i.busBooking.Add(models.BusBooking{
+	id, err := i.busBooking.Add(ctx, models.BusBooking{
 		Id:    0,
 		Route: in.GetRoute(),
 		Date:  in.GetDate(),
@@ -53,7 +53,7 @@ func (i *implementation) BusBookingAdd(ctx context.Context, in *pb.BusBookingAdd
 }
 
 func (i *implementation) BusBookingGet(ctx context.Context, in *pb.BusBookingGetRequest) (*pb.BusBookingGetResponse, error) {
-	bb, err := i.busBooking.Get(uint(in.GetId()))
+	bb, err := i.busBooking.Get(ctx, uint(in.GetId()))
 	if err != nil { // TODO enrich work with errors
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -67,6 +67,7 @@ func (i *implementation) BusBookingGet(ctx context.Context, in *pb.BusBookingGet
 
 func (i *implementation) BusBookingChangeSeat(ctx context.Context, in *pb.BusBookingChangeSeatRequest) (*pb.BusBookingChangeSeatResponse, error) {
 	err := i.busBooking.ChangeSeat(
+		ctx,
 		uint(in.GetId()),
 		uint(in.GetSeat()),
 	)
@@ -78,6 +79,7 @@ func (i *implementation) BusBookingChangeSeat(ctx context.Context, in *pb.BusBoo
 
 func (i *implementation) BusBookingChangeDateSeat(ctx context.Context, in *pb.BusBookingChangeDateSeatRequest) (*pb.BusBookingChangeDateSeatResponse, error) {
 	err := i.busBooking.ChangeDateSeat(
+		ctx,
 		uint(in.GetId()),
 		in.GetDate(),
 		uint(in.GetSeat()),
@@ -89,7 +91,7 @@ func (i *implementation) BusBookingChangeDateSeat(ctx context.Context, in *pb.Bu
 }
 
 func (i *implementation) BusBookingDelete(ctx context.Context, in *pb.BusBookingDeleteRequest) (*pb.BusBookingDeleteResponse, error) {
-	err := i.busBooking.Delete(uint(in.GetId()))
+	err := i.busBooking.Delete(ctx, uint(in.GetId()))
 	if err != nil { // TODO enrich work with errors
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}

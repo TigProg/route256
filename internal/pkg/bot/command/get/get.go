@@ -1,6 +1,7 @@
 package get
 
 import (
+	"context"
 	"fmt"
 
 	commandPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/bot/command"
@@ -26,7 +27,7 @@ func (c *command) Description() string {
 	return "get bus booking by id"
 }
 
-func (c *command) Process(args string) string {
+func (c *command) Process(ctx context.Context, args string) string {
 	params, err := commandPkg.CheckArguments(args, 1)
 	if err != nil {
 		return err.Error()
@@ -37,7 +38,7 @@ func (c *command) Process(args string) string {
 		return err.Error()
 	}
 
-	if bb, err := c.bb.Get(id); err != nil {
+	if bb, err := c.bb.Get(ctx, id); err != nil {
 		return err.Error()
 	} else {
 		return fmt.Sprintf("[SUCCESS]\n%d: %s / %s / %d", id, bb.Route, bb.Date, bb.Seat)

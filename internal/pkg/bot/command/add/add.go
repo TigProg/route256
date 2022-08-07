@@ -1,6 +1,7 @@
 package add
 
 import (
+	"context"
 	"fmt"
 
 	commandPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/bot/command"
@@ -27,7 +28,7 @@ func (c *command) Description() string {
 	return "create bus booking"
 }
 
-func (c *command) Process(args string) string {
+func (c *command) Process(ctx context.Context, args string) string {
 	params, err := commandPkg.CheckArguments(args, 3)
 	if err != nil {
 		return err.Error()
@@ -38,7 +39,7 @@ func (c *command) Process(args string) string {
 		return err.Error()
 	}
 
-	if id, err := c.bb.Add(models.BusBooking{
+	if id, err := c.bb.Add(ctx, models.BusBooking{
 		Id:    0,
 		Route: params[0],
 		Date:  params[1],
