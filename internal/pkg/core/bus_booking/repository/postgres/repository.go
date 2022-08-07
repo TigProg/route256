@@ -48,10 +48,10 @@ func (r *repo) List(ctx context.Context) ([]models.BusBooking, error) {
 			return nil, ErrInternal
 		}
 		result = append(result, models.BusBooking{
-			Id:    values[0].(uint),
+			Id:    uint(values[0].(int32)),
 			Route: values[1].(string),
 			Date:  values[2].(string),
-			Seat:  values[3].(uint),
+			Seat:  uint(values[3].(int32)),
 		})
 	}
 	return result, nil
@@ -93,7 +93,7 @@ func (r *repo) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
 			// TODO log
 			return 0, ErrInternal
 		}
-		return values[0].(uint), nil
+		return uint(values[0].(int32)), nil
 	}
 	return 0, ErrInternal
 }
@@ -125,10 +125,10 @@ func (r *repo) Get(ctx context.Context, id uint) (*models.BusBooking, error) {
 			return nil, ErrInternal
 		}
 		return &models.BusBooking{
-			Id:    values[0].(uint),
+			Id:    uint(values[0].(int32)),
 			Route: values[1].(string),
 			Date:  values[2].(string),
-			Seat:  values[3].(uint),
+			Seat:  uint(values[3].(int32)),
 		}, nil
 	}
 	return nil, repoPkg.ErrBusBookingNotExists
@@ -206,7 +206,7 @@ func (r *repo) Delete(ctx context.Context, id uint) error {
 
 	query := `
 		DELETE
-		FROM public.route
+		FROM public.booking
 		WHERE id = $1
 	`
 	rows, err := r.pool.Query(ctx, query, id)
@@ -249,7 +249,7 @@ func (r *repo) reverseSearch(ctx context.Context, route string, date string, sea
 			// TODO log
 			return 0, ErrInternal
 		}
-		return values[0].(uint), nil
+		return uint(values[0].(int32)), nil
 	}
 	return 0, repoPkg.ErrBusBookingNotExists
 }
@@ -276,7 +276,7 @@ func (r *repo) getRouteIdByRouteName(ctx context.Context, routeName string) (uin
 			// TODO log
 			return 0, ErrInternal
 		}
-		return values[0].(uint), nil
+		return uint(values[0].(int32)), nil
 	}
 	return 0, ErrRouteNameNotExist
 }

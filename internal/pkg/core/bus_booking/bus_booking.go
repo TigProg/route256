@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	cachePkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/cache"
-	localCachePkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/cache/local"
 	"gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/models"
+	repoPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository"
 )
 
 const (
@@ -29,18 +28,18 @@ type Interface interface {
 	Delete(ctx context.Context, id uint) error
 }
 
-func New() Interface {
+func New(repo repoPkg.Interface) Interface {
 	return &core{
-		cache: localCachePkg.New(),
+		repo: repo,
 	}
 }
 
 type core struct {
-	cache cachePkg.Interface
+	repo repoPkg.Interface
 }
 
 func (c *core) List(ctx context.Context) ([]models.BusBooking, error) {
-	return c.cache.List()
+	return c.repo.List(ctx)
 }
 
 func (c *core) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
@@ -53,18 +52,18 @@ func (c *core) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
 	if err := checkCorrectSeat(bb.Seat); err != nil {
 		return 0, err
 	}
-	return c.cache.Add(bb)
+	return c.repo.Add(ctx, bb)
 }
 
 func (c *core) Get(ctx context.Context, id uint) (*models.BusBooking, error) {
-	return c.cache.Get(id)
+	return c.repo.Get(ctx, id)
 }
 
 func (c *core) ChangeSeat(ctx context.Context, id uint, newSeat uint) error {
 	if err := checkCorrectSeat(newSeat); err != nil {
 		return err
 	}
-	return c.cache.ChangeSeat(id, newSeat)
+	return c.repo.ChangeSeat(ctx, id, newSeat)
 }
 
 func (c *core) ChangeDateSeat(ctx context.Context, id uint, newDate string, newSeat uint) error {
@@ -74,11 +73,11 @@ func (c *core) ChangeDateSeat(ctx context.Context, id uint, newDate string, newS
 	if err := checkCorrectSeat(newSeat); err != nil {
 		return err
 	}
-	return c.cache.ChangeDateSeat(id, newDate, newSeat)
+	return c.repo.ChangeDateSeat(ctx, id, newDate, newSeat)
 }
 
 func (c *core) Delete(ctx context.Context, id uint) error {
-	return c.cache.Delete(id)
+	return c.repo.Delete(ctx, id)
 }
 
 func checkCorrectRoute(route string) error {
