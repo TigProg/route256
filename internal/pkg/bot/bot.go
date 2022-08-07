@@ -12,7 +12,7 @@ import (
 )
 
 type Interface interface {
-	Run() error
+	Run(ctx context.Context) error
 	RegisterHandler(cmd commandPkg.Interface)
 }
 
@@ -40,7 +40,7 @@ func (c *commander) RegisterHandler(cmd commandPkg.Interface) {
 	c.route[cmd.Name()] = cmd
 }
 
-func (c *commander) Run() error {
+func (c *commander) Run(ctx context.Context) error {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = configPkg.TelegramBotApiTimeout
 	updates := c.bot.GetUpdatesChan(u)
@@ -54,7 +54,6 @@ func (c *commander) Run() error {
 			if cmd, ok := c.route[cmdName]; ok {
 				cmdArgs := update.Message.CommandArguments()
 				log.Printf("Run [%s] command with args: <%s>", cmdName, cmdArgs)
-				ctx := context.TODO() // TODO
 				msg.Text = cmd.Process(ctx, cmdArgs)
 			} else {
 				log.Printf("Get unknown command: <%s>", cmdName)

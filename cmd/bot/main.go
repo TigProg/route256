@@ -56,7 +56,7 @@ func main() {
 	repo := repoPostgresPkg.New(pool)
 	bb := bbPkg.New(repo)
 
-	go runBot(bb)
-	go runREST()
-	runGRPCServer(bb)
+	go runBot(ctx, bb)
+	go runREST(ctx)
+	runGRPCServer(ctx, bb)
 }
