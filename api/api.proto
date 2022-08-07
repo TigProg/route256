@@ -9,7 +9,8 @@ service Admin {
   // return all bus bookings
   rpc BusBookingList(BusBookingListRequest) returns (BusBookingListResponse) {
     option (google.api.http) = {
-      get: "/v1/bus_bookings"
+      post: "/v1/bus_bookings"
+      body: "*"
     };
   }
   // create new bus booking (if it is not booked)
