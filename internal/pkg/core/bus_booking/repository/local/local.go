@@ -11,6 +11,22 @@ import (
 	repoPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository"
 )
 
+var routeAllowList map[string]struct{}
+
+func init() {
+	// only for local test
+	// copy of second migration
+	routeAllowList = make(map[string]struct{})
+	routeAllowList["ufaspb"] = struct{}{}
+	routeAllowList["spbufa"] = struct{}{}
+	routeAllowList["ufamsk"] = struct{}{}
+	routeAllowList["mskufa"] = struct{}{}
+	routeAllowList["spbmsk"] = struct{}{}
+	routeAllowList["mskspb"] = struct{}{}
+	routeAllowList["ufanowhere"] = struct{}{}
+	routeAllowList["nowhereufa"] = struct{}{}
+}
+
 func New() repoPkg.Interface {
 	return &local{
 		mu:     sync.RWMutex{},
@@ -56,6 +72,10 @@ func (c *local) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
 		c.mu.Unlock()
 		<-c.poolCh
 	}()
+
+	if _, found := routeAllowList[bb.Route]; !found {
+		return 0, repoPkg.ErrRouteNameNotExist
+	}
 
 	if existedId, err := c.reverseSearch(bb.Route, bb.Date, bb.Seat); err == nil {
 		return 0, errors.Wrapf(repoPkg.ErrBusBookingAlreadyExists, "%d", existedId)

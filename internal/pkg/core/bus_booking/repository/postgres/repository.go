@@ -10,8 +10,7 @@ import (
 )
 
 var (
-	ErrInternal          = errors.New("internal error")
-	ErrRouteNameNotExist = errors.New("route not exist")
+	ErrInternal = errors.New("internal error")
 )
 
 func New(pool *pgxpool.Pool) repoPkg.Interface {
@@ -75,7 +74,7 @@ func (r *repo) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
 
 	existedRouteId, err := r.getRouteIdByRouteName(ctx, bb.Route)
 	if err != nil {
-		if errors.Is(err, ErrRouteNameNotExist) {
+		if errors.Is(err, repoPkg.ErrRouteNameNotExist) {
 			return 0, err
 		}
 		return 0, ErrInternal
@@ -284,5 +283,5 @@ func (r *repo) getRouteIdByRouteName(ctx context.Context, routeName string) (uin
 		}
 		return uint(values[0].(int32)), nil
 	}
-	return 0, ErrRouteNameNotExist
+	return 0, repoPkg.ErrRouteNameNotExist
 }

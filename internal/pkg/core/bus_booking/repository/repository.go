@@ -10,6 +10,7 @@ import (
 var (
 	ErrBusBookingNotExists     = errors.New("bus booking does not exist")
 	ErrBusBookingAlreadyExists = errors.New("bus booking already exists")
+	ErrRouteNameNotExist       = errors.New("route not exist")
 )
 
 type Interface interface {
