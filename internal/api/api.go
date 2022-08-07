@@ -23,7 +23,10 @@ type implementation struct {
 }
 
 func (i *implementation) BusBookingList(ctx context.Context, in *pb.BusBookingListRequest) (*pb.BusBookingListResponse, error) {
-	bbs := i.busBooking.List(ctx)
+	bbs, err := i.busBooking.List(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "")
+	}
 
 	result := make([]*pb.BusBooking, 0, len(bbs))
 	for _, bb := range bbs {

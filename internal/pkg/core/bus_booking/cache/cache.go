@@ -5,7 +5,7 @@ import (
 )
 
 type Interface interface {
-	List() []models.BusBooking
+	List() ([]models.BusBooking, error)
 	Add(bb models.BusBooking) (uint, error)
 	Get(id uint) (*models.BusBooking, error)
 	ChangeSeat(id uint, newSeat uint) error

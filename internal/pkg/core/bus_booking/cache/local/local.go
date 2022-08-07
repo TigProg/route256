@@ -30,7 +30,7 @@ type cache struct {
 	poolCh chan struct{}
 }
 
-func (c *cache) List() []models.BusBooking {
+func (c *cache) List() ([]models.BusBooking, error) {
 	c.poolCh <- struct{}{}
 	c.mu.RLock()
 	defer func() {
@@ -42,7 +42,7 @@ func (c *cache) List() []models.BusBooking {
 	for _, bb := range c.data {
 		result = append(result, *bb)
 	}
-	return result
+	return result, nil
 }
 
 func (c *cache) Add(bb models.BusBooking) (uint, error) {

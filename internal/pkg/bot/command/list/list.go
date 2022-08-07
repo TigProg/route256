@@ -27,7 +27,10 @@ func (c *command) Description() string {
 }
 
 func (c *command) Process(ctx context.Context, _ string) string {
-	bbs := c.bb.List(ctx)
+	bbs, err := c.bb.List(ctx)
+	if err != nil {
+		return "internal error"
+	}
 	result := fmt.Sprint("id: route / date / seat")
 
 	for _, bb := range bbs {
