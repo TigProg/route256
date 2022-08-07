@@ -1,21 +1,18 @@
 package local
 
 import (
+	"context"
+	"sort"
 	"sync"
 
 	"github.com/pkg/errors"
 	configPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/config"
-	cachePkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/cache"
 	"gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/models"
+	repoPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository"
 )
 
-var (
-	ErrBusBookingNotExists     = errors.New("bus booking does not exist")
-	ErrBusBookingAlreadyExists = errors.New("bus booking already exists")
-)
-
-func New() cachePkg.Interface {
-	return &cache{
+func New() repoPkg.Interface {
+	return &local{
 		mu:     sync.RWMutex{},
 		nextId: 1,
 		data:   map[uint]*models.BusBooking{},
@@ -23,14 +20,14 @@ func New() cachePkg.Interface {
 	}
 }
 
-type cache struct {
+type local struct {
 	mu     sync.RWMutex
 	nextId uint
 	data   map[uint]*models.BusBooking
 	poolCh chan struct{}
 }
 
-func (c *cache) List() ([]models.BusBooking, error) {
+func (c *local) List(ctx context.Context, offset uint, limit uint) ([]models.BusBooking, error) {
 	c.poolCh <- struct{}{}
 	c.mu.RLock()
 	defer func() {
@@ -42,10 +39,17 @@ func (c *cache) List() ([]models.BusBooking, error) {
 	for _, bb := range c.data {
 		result = append(result, *bb)
 	}
-	return result, nil
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Id < result[j].Id
+	})
+
+	leftBound := min(int(offset), len(result))
+	rightBound := min(int(offset+limit), len(result))
+
+	return result[leftBound:rightBound], nil
 }
 
-func (c *cache) Add(bb models.BusBooking) (uint, error) {
+func (c *local) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
 	c.poolCh <- struct{}{}
 	c.mu.Lock()
 	defer func() {
@@ -54,7 +58,7 @@ func (c *cache) Add(bb models.BusBooking) (uint, error) {
 	}()
 
 	if existedId, err := c.reverseSearch(bb.Route, bb.Date, bb.Seat); err == nil {
-		return 0, errors.Wrapf(ErrBusBookingAlreadyExists, "%d", existedId)
+		return 0, errors.Wrapf(repoPkg.ErrBusBookingAlreadyExists, "%d", existedId)
 	}
 
 	var id = c.nextId
@@ -65,7 +69,7 @@ func (c *cache) Add(bb models.BusBooking) (uint, error) {
 	return id, nil
 }
 
-func (c *cache) Get(id uint) (*models.BusBooking, error) {
+func (c *local) Get(ctx context.Context, id uint) (*models.BusBooking, error) {
 	c.poolCh <- struct{}{}
 	c.mu.RLock()
 	defer func() {
@@ -76,10 +80,10 @@ func (c *cache) Get(id uint) (*models.BusBooking, error) {
 	if bb, ok := c.data[id]; ok {
 		return bb, nil
 	}
-	return nil, errors.Wrapf(ErrBusBookingNotExists, "%d", id)
+	return nil, errors.Wrapf(repoPkg.ErrBusBookingNotExists, "%d", id)
 }
 
-func (c *cache) ChangeSeat(id uint, newSeat uint) error {
+func (c *local) ChangeSeat(ctx context.Context, id uint, newSeat uint) error {
 	c.poolCh <- struct{}{}
 	c.mu.Lock()
 	defer func() {
@@ -89,20 +93,20 @@ func (c *cache) ChangeSeat(id uint, newSeat uint) error {
 
 	bb, ok := c.data[id]
 	if !ok {
-		return errors.Wrapf(ErrBusBookingNotExists, "%d", id)
+		return errors.Wrapf(repoPkg.ErrBusBookingNotExists, "%d", id)
 	}
 	if bb.Seat == newSeat {
 		return nil // for idempotency
 	}
 
 	if existedId, err := c.reverseSearch(bb.Route, bb.Date, newSeat); err == nil {
-		return errors.Wrapf(ErrBusBookingAlreadyExists, "%d", existedId)
+		return errors.Wrapf(repoPkg.ErrBusBookingAlreadyExists, "%d", existedId)
 	}
 	bb.Seat = newSeat
 	return nil
 }
 
-func (c *cache) ChangeDateSeat(id uint, newDate string, newSeat uint) error {
+func (c *local) ChangeDateSeat(ctx context.Context, id uint, newDate string, newSeat uint) error {
 	c.poolCh <- struct{}{}
 	c.mu.Lock()
 	defer func() {
@@ -112,21 +116,21 @@ func (c *cache) ChangeDateSeat(id uint, newDate string, newSeat uint) error {
 
 	bb, ok := c.data[id]
 	if !ok {
-		return errors.Wrapf(ErrBusBookingNotExists, "%d", id)
+		return errors.Wrapf(repoPkg.ErrBusBookingNotExists, "%d", id)
 	}
 	if bb.Seat == newSeat && bb.Date == newDate {
 		return nil // for idempotency
 	}
 
 	if existedId, err := c.reverseSearch(bb.Route, newDate, newSeat); err == nil {
-		return errors.Wrapf(ErrBusBookingAlreadyExists, "%d", existedId)
+		return errors.Wrapf(repoPkg.ErrBusBookingAlreadyExists, "%d", existedId)
 	}
 	bb.Seat = newSeat
 	bb.Date = newDate
 	return nil
 }
 
-func (c *cache) Delete(id uint) error {
+func (c *local) Delete(ctx context.Context, id uint) error {
 	c.poolCh <- struct{}{}
 	c.mu.Lock()
 	defer func() {
@@ -138,15 +142,22 @@ func (c *cache) Delete(id uint) error {
 		delete(c.data, id)
 		return nil
 	}
-	return errors.Wrapf(ErrBusBookingNotExists, "%d", id)
+	return errors.Wrapf(repoPkg.ErrBusBookingNotExists, "%d", id)
 }
 
 // reverseSearch - not thread-safe
-func (c *cache) reverseSearch(route string, date string, seat uint) (uint, error) {
+func (c *local) reverseSearch(route string, date string, seat uint) (uint, error) {
 	for _, bb := range c.data {
 		if bb.Route == route && bb.Date == date && bb.Seat == seat {
 			return bb.Id, nil
 		}
 	}
-	return 0, ErrBusBookingNotExists
+	return 0, repoPkg.ErrBusBookingNotExists
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }

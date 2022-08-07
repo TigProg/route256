@@ -54,6 +54,8 @@ func main() {
 	}
 
 	repo := repoPostgresPkg.New(pool)
+	//repo := repoLocalPkg.New()  // for local cache
+
 	bb := bbPkg.New(repo)
 
 	go runBot(ctx, bb)
