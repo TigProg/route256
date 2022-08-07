@@ -20,7 +20,7 @@ const (
 )
 
 type Interface interface {
-	List(ctx context.Context) ([]models.BusBooking, error)
+	List(ctx context.Context, offset uint, limit uint) ([]models.BusBooking, error)
 	Add(ctx context.Context, bb models.BusBooking) (uint, error)
 	Get(ctx context.Context, id uint) (*models.BusBooking, error)
 	ChangeSeat(ctx context.Context, id uint, newSeat uint) error
@@ -38,8 +38,8 @@ type core struct {
 	repo repoPkg.Interface
 }
 
-func (c *core) List(ctx context.Context) ([]models.BusBooking, error) {
-	return c.repo.List(ctx)
+func (c *core) List(ctx context.Context, offset uint, limit uint) ([]models.BusBooking, error) {
+	return c.repo.List(ctx, offset, limit)
 }
 
 func (c *core) Add(ctx context.Context, bb models.BusBooking) (uint, error) {

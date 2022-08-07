@@ -13,7 +13,7 @@ var (
 )
 
 type Interface interface {
-	List(ctx context.Context) ([]models.BusBooking, error)
+	List(ctx context.Context, offset uint, limit uint) ([]models.BusBooking, error)
 	Add(ctx context.Context, bb models.BusBooking) (uint, error)
 	Get(ctx context.Context, id uint) (*models.BusBooking, error)
 	ChangeSeat(ctx context.Context, id uint, newSeat uint) error

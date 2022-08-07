@@ -22,7 +22,7 @@ type repo struct {
 	pool *pgxpool.Pool
 }
 
-func (r *repo) List(ctx context.Context) ([]models.BusBooking, error) {
+func (r *repo) List(ctx context.Context, offset uint, limit uint) ([]models.BusBooking, error) {
 	query := `
 		SELECT
 			b.id AS id,
@@ -32,8 +32,14 @@ func (r *repo) List(ctx context.Context) ([]models.BusBooking, error) {
 		FROM
 			public.booking as b
 			INNER JOIN public.route as r ON (b.route_id = r.id)
+		ORDER BY
+		    b.id
+		LIMIT
+		    $1
+		OFFSET
+		    $2
 	`
-	rows, err := r.pool.Query(ctx, query)
+	rows, err := r.pool.Query(ctx, query, limit, offset)
 	if err != nil {
 		// TODO log
 		return nil, ErrInternal

@@ -23,7 +23,10 @@ type implementation struct {
 }
 
 func (i *implementation) BusBookingList(ctx context.Context, in *pb.BusBookingListRequest) (*pb.BusBookingListResponse, error) {
-	bbs, err := i.busBooking.List(ctx)
+	offset := uint(in.GetOffset())
+	limit := uint(in.GetLimit())
+
+	bbs, err := i.busBooking.List(ctx, offset, limit)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "")
 	}
