@@ -4,24 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
+	configPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/config"
 	bbPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking"
 	repoPostgresPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository/postgres"
-)
-
-const (
-	Host     = "localhost"
-	Port     = 5432
-	User     = "user"
-	Password = "password"
-	DBname   = "bus_booking"
-
-	MaxConnIdleTime = time.Minute
-	MaxConnLifetime = time.Hour
-	MinConns        = 2
-	MaxConns        = 4
 )
 
 func main() {
@@ -32,7 +19,9 @@ func main() {
 	{
 		psqlConn := fmt.Sprintf(
 			"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-			Host, Port, User, Password, DBname,
+			configPkg.PosgtreSQLHost, configPkg.PosgtreSQLPort,
+			configPkg.PosgtreSQLUser, configPkg.PosgtreSQLPassword,
+			configPkg.PosgtreSQLDBname,
 		)
 
 		pool_, err := pgxpool.Connect(ctx, psqlConn)
@@ -47,10 +36,10 @@ func main() {
 		}
 
 		config := pool.Config()
-		config.MaxConnIdleTime = MaxConnIdleTime
-		config.MaxConnLifetime = MaxConnLifetime
-		config.MinConns = MinConns
-		config.MaxConns = MaxConns
+		config.MaxConnIdleTime = configPkg.PosgtreSQLMaxConnIdleTime
+		config.MaxConnLifetime = configPkg.PosgtreSQLMaxConnLifetime
+		config.MinConns = configPkg.PosgtreSQLMinConns
+		config.MaxConns = configPkg.PosgtreSQLMaxConns
 	}
 
 	repo := repoPostgresPkg.New(pool)
