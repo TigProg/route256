@@ -9,10 +9,6 @@ import (
 	repoPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository"
 )
 
-var (
-	ErrInternal = errors.New("internal error")
-)
-
 func New(pool *pgxpool.Pool) repoPkg.Interface {
 	return &repo{pool}
 }
@@ -41,7 +37,7 @@ func (r *repo) List(ctx context.Context, offset uint, limit uint) ([]models.BusB
 	rows, err := r.pool.Query(ctx, query, limit, offset)
 	if err != nil {
 		// TODO log
-		return nil, ErrInternal
+		return nil, repoPkg.ErrInternal
 	}
 	defer rows.Close()
 
@@ -50,7 +46,7 @@ func (r *repo) List(ctx context.Context, offset uint, limit uint) ([]models.BusB
 		values, err := rows.Values()
 		if err != nil {
 			// TODO log
-			return nil, ErrInternal
+			return nil, repoPkg.ErrInternal
 		}
 		result = append(result, models.BusBooking{
 			Id:    uint(values[0].(int32)),
@@ -69,7 +65,7 @@ func (r *repo) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
 	}
 	if !errors.Is(err, repoPkg.ErrBusBookingNotExists) {
 		// TODO log
-		return 0, ErrInternal
+		return 0, repoPkg.ErrInternal
 	}
 
 	existedRouteId, err := r.getRouteIdByRouteName(ctx, bb.Route)
@@ -77,7 +73,7 @@ func (r *repo) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
 		if errors.Is(err, repoPkg.ErrRouteNameNotExist) {
 			return 0, err
 		}
-		return 0, ErrInternal
+		return 0, repoPkg.ErrInternal
 	}
 
 	query := `
@@ -88,7 +84,7 @@ func (r *repo) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
 	rows, err := r.pool.Query(ctx, query, existedRouteId, bb.Date, bb.Seat)
 	if err != nil {
 		// TODO log
-		return 0, ErrInternal
+		return 0, repoPkg.ErrInternal
 	}
 	defer rows.Close()
 
@@ -96,11 +92,11 @@ func (r *repo) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
 		values, err := rows.Values()
 		if err != nil {
 			// TODO log
-			return 0, ErrInternal
+			return 0, repoPkg.ErrInternal
 		}
 		return uint(values[0].(int32)), nil
 	}
-	return 0, ErrInternal
+	return 0, repoPkg.ErrInternal
 }
 
 func (r *repo) Get(ctx context.Context, id uint) (*models.BusBooking, error) {
@@ -119,7 +115,7 @@ func (r *repo) Get(ctx context.Context, id uint) (*models.BusBooking, error) {
 	rows, err := r.pool.Query(ctx, query, id)
 	if err != nil {
 		// TODO log
-		return nil, ErrInternal
+		return nil, repoPkg.ErrInternal
 	}
 	defer rows.Close()
 
@@ -127,7 +123,7 @@ func (r *repo) Get(ctx context.Context, id uint) (*models.BusBooking, error) {
 		values, err := rows.Values()
 		if err != nil {
 			// TODO log
-			return nil, ErrInternal
+			return nil, repoPkg.ErrInternal
 		}
 		return &models.BusBooking{
 			Id:    uint(values[0].(int32)),
@@ -154,7 +150,7 @@ func (r *repo) ChangeSeat(ctx context.Context, id uint, newSeat uint) error {
 	}
 	if !errors.Is(err, repoPkg.ErrBusBookingNotExists) {
 		// TODO log
-		return ErrInternal
+		return repoPkg.ErrInternal
 	}
 
 	query := `
@@ -165,7 +161,7 @@ func (r *repo) ChangeSeat(ctx context.Context, id uint, newSeat uint) error {
 	rows, err := r.pool.Query(ctx, query, id, newSeat)
 	if err != nil {
 		// TODO log
-		return ErrInternal
+		return repoPkg.ErrInternal
 	}
 	defer rows.Close()
 	return nil
@@ -186,7 +182,7 @@ func (r *repo) ChangeDateSeat(ctx context.Context, id uint, newDate string, newS
 	}
 	if !errors.Is(err, repoPkg.ErrBusBookingNotExists) {
 		// TODO log
-		return ErrInternal
+		return repoPkg.ErrInternal
 	}
 
 	query := `
@@ -197,7 +193,7 @@ func (r *repo) ChangeDateSeat(ctx context.Context, id uint, newDate string, newS
 	rows, err := r.pool.Query(ctx, query, id, newSeat, newDate)
 	if err != nil {
 		// TODO log
-		return ErrInternal
+		return repoPkg.ErrInternal
 	}
 	defer rows.Close()
 	return nil
@@ -217,7 +213,7 @@ func (r *repo) Delete(ctx context.Context, id uint) error {
 	rows, err := r.pool.Query(ctx, query, id)
 	if err != nil {
 		// TODO log
-		return ErrInternal
+		return repoPkg.ErrInternal
 	}
 	defer rows.Close()
 	return nil
@@ -244,7 +240,7 @@ func (r *repo) reverseSearch(ctx context.Context, route string, date string, sea
 	rows, err := r.pool.Query(ctx, query, route, date, seat)
 	if err != nil {
 		// TODO log
-		return 0, ErrInternal
+		return 0, repoPkg.ErrInternal
 	}
 	defer rows.Close()
 
@@ -252,7 +248,7 @@ func (r *repo) reverseSearch(ctx context.Context, route string, date string, sea
 		values, err := rows.Values()
 		if err != nil {
 			// TODO log
-			return 0, ErrInternal
+			return 0, repoPkg.ErrInternal
 		}
 		return uint(values[0].(int32)), nil
 	}
@@ -271,7 +267,7 @@ func (r *repo) getRouteIdByRouteName(ctx context.Context, routeName string) (uin
 	rows, err := r.pool.Query(ctx, query, routeName)
 	if err != nil {
 		// TODO log
-		return 0, ErrInternal
+		return 0, repoPkg.ErrInternal
 	}
 	defer rows.Close()
 
@@ -279,7 +275,7 @@ func (r *repo) getRouteIdByRouteName(ctx context.Context, routeName string) (uin
 		values, err := rows.Values()
 		if err != nil {
 			// TODO log
-			return 0, ErrInternal
+			return 0, repoPkg.ErrInternal
 		}
 		return uint(values[0].(int32)), nil
 	}
