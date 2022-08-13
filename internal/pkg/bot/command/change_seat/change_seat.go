@@ -6,7 +6,6 @@ import (
 
 	commandPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/bot/command"
 	bbPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking"
-	toolsPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/tools"
 )
 
 func New(bb bbPkg.Interface) commandPkg.Interface {
@@ -33,11 +32,11 @@ func (c *command) Process(ctx context.Context, args string) string {
 		return err.Error()
 	}
 
-	id, err := toolsPkg.StringToUint(params[0])
+	id, err := commandPkg.StringToUint(params[0])
 	if err != nil {
 		return err.Error()
 	}
-	newSeat, err := toolsPkg.StringToUint(params[1])
+	newSeat, err := commandPkg.StringToUint(params[1])
 	if err != nil {
 		return err.Error()
 	}
