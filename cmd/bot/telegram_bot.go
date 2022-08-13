@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	botPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/bot"
@@ -49,10 +50,10 @@ func initBot(bb bbPkg.Interface) botPkg.Interface {
 	return bot
 }
 
-func runBot(bb bbPkg.Interface) {
+func runBot(ctx context.Context, bb bbPkg.Interface) {
 	bot := initBot(bb)
 
-	if err := bot.Run(); err != nil {
+	if err := bot.Run(ctx); err != nil {
 		log.Panic(err)
 	}
 }

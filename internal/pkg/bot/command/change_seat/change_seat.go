@@ -1,6 +1,7 @@
 package change_seat
 
 import (
+	"context"
 	"fmt"
 
 	commandPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/bot/command"
@@ -26,7 +27,7 @@ func (c *command) Description() string {
 	return "change seat of bus booking"
 }
 
-func (c *command) Process(args string) string {
+func (c *command) Process(ctx context.Context, args string) string {
 	params, err := commandPkg.CheckArguments(args, 2)
 	if err != nil {
 		return err.Error()
@@ -41,7 +42,7 @@ func (c *command) Process(args string) string {
 		return err.Error()
 	}
 
-	if err := c.bb.ChangeSeat(id, newSeat); err != nil {
+	if err := c.bb.ChangeSeat(ctx, id, newSeat); err != nil {
 		return err.Error()
 	}
 	return fmt.Sprintf("[SUCCESS]\nBooking seat changed successfully to %d\nbooking number: %d", newSeat, id)

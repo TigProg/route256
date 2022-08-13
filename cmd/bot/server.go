@@ -14,7 +14,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func runGRPCServer(bb bbPkg.Interface) {
+func runGRPCServer(ctx context.Context, bb bbPkg.Interface) { // TODO
 	listener, err := net.Listen("tcp", configPkg.GRPCServerAddress)
 	if err != nil {
 		panic(err)
@@ -28,9 +28,7 @@ func runGRPCServer(bb bbPkg.Interface) {
 	}
 }
 
-func runREST() {
-	ctx := context.Background()
-
+func runREST(ctx context.Context) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 

@@ -177,7 +177,7 @@
       }
     },
     "/v1/bus_bookings": {
-      "get": {
+      "post": {
         "summary": "return all bus bookings",
         "operationId": "Admin_BusBookingList",
         "responses": {
@@ -194,6 +194,16 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiBusBookingListRequest"
+            }
+          }
+        ],
         "tags": [
           "Admin"
         ]
@@ -296,6 +306,19 @@
       "properties": {
         "busBooking": {
           "$ref": "#/definitions/apiBusBooking"
+        }
+      }
+    },
+    "apiBusBookingListRequest": {
+      "type": "object",
+      "properties": {
+        "offset": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int64"
         }
       }
     },
