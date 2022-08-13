@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 	"net"
 	"net/http"
 
@@ -17,14 +18,14 @@ import (
 func runGRPCServer(ctx context.Context, bb bbPkg.Interface) { // TODO
 	listener, err := net.Listen("tcp", configPkg.GRPCServerAddress)
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 
 	grpcServer := grpc.NewServer()
 	pb.RegisterAdminServer(grpcServer, apiPkg.New(bb))
 
 	if err = grpcServer.Serve(listener); err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 }
 
@@ -35,10 +36,10 @@ func runREST(ctx context.Context) {
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	if err := pb.RegisterAdminHandlerFromEndpoint(ctx, mux, configPkg.GRPCServerAddress, opts); err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 
 	if err := http.ListenAndServe(configPkg.RESTServerAddress, mux); err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 }

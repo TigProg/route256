@@ -27,12 +27,12 @@ func main() {
 		pool_, err := pgxpool.Connect(ctx, psqlConn)
 		pool = pool_
 		if err != nil {
-			log.Fatal("can't connect to database", err)
+			log.Panic("can't connect to database", err)
 		}
 		defer pool.Close()
 
 		if err := pool.Ping(ctx); err != nil {
-			log.Fatal("ping database error", err)
+			log.Panic("ping database error", err)
 		}
 
 		config := pool.Config()
