@@ -2,9 +2,9 @@ package bus_booking
 
 import (
 	"context"
-	"fmt"
 	"time"
 
+	"github.com/pkg/errors"
 	"gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/models"
 	repoPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository"
 )
@@ -18,6 +18,8 @@ const (
 	BusBookingMinSeatNumber = 1
 	BusBookingMaxSeatNumber = 100
 )
+
+var ErrValidate = errors.New("")
 
 type Interface interface {
 	List(ctx context.Context, offset uint, limit uint) ([]models.BusBooking, error)
@@ -82,7 +84,8 @@ func (c *core) Delete(ctx context.Context, id uint) error {
 
 func checkCorrectRoute(route string) error {
 	if len(route) < BusBookingRouteMinLen || len(route) > BusBookingRouteMaxLen {
-		return fmt.Errorf(
+		return errors.Wrapf(
+			ErrValidate,
 			"expected route length from %d to %d, got %d: [%v]",
 			BusBookingRouteMinLen, BusBookingRouteMaxLen, len(route), route,
 		)
@@ -92,7 +95,8 @@ func checkCorrectRoute(route string) error {
 
 func checkCorrectDate(dateString string) error {
 	if _, err := time.Parse(DateFormat, dateString); err != nil {
-		return fmt.Errorf(
+		return errors.Wrapf(
+			ErrValidate,
 			"expected correct date in format [%v], got [%v]",
 			DateFormat, dateString,
 		)
@@ -102,7 +106,8 @@ func checkCorrectDate(dateString string) error {
 
 func checkCorrectSeat(seat uint) error {
 	if seat < BusBookingMinSeatNumber || seat > BusBookingMaxSeatNumber {
-		return fmt.Errorf(
+		return errors.Wrapf(
+			ErrValidate,
 			"expected seat number from %d to %d, got %d",
 			BusBookingMinSeatNumber, BusBookingMaxSeatNumber, seat,
 		)
