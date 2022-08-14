@@ -2,6 +2,7 @@ package bus_booking
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/pkg/errors"
@@ -19,7 +20,14 @@ const (
 	BusBookingMaxSeatNumber = 100
 )
 
-var ErrValidate = errors.New("")
+var (
+	ErrValidate = errors.New("")
+
+	ErrBusBookingNotExists     = errors.New("bus booking does not exist")
+	ErrBusBookingAlreadyExists = errors.New("bus booking already exists")
+	ErrRouteNameNotExist       = errors.New("route not exist")
+	ErrInternal                = errors.New("internal error")
+)
 
 type Interface interface {
 	List(ctx context.Context, offset uint, limit uint) ([]models.BusBooking, error)
@@ -41,7 +49,8 @@ type core struct {
 }
 
 func (c *core) List(ctx context.Context, offset uint, limit uint) ([]models.BusBooking, error) {
-	return c.repo.List(ctx, offset, limit)
+	result, err := c.repo.List(ctx, offset, limit)
+	return result, repoErrorToBbError(err)
 }
 
 func (c *core) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
@@ -54,18 +63,20 @@ func (c *core) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
 	if err := checkCorrectSeat(bb.Seat); err != nil {
 		return 0, err
 	}
-	return c.repo.Add(ctx, bb)
+	result, err := c.repo.Add(ctx, bb)
+	return result, repoErrorToBbError(err)
 }
 
 func (c *core) Get(ctx context.Context, id uint) (*models.BusBooking, error) {
-	return c.repo.Get(ctx, id)
+	result, err := c.repo.Get(ctx, id)
+	return result, repoErrorToBbError(err)
 }
 
 func (c *core) ChangeSeat(ctx context.Context, id uint, newSeat uint) error {
 	if err := checkCorrectSeat(newSeat); err != nil {
 		return err
 	}
-	return c.repo.ChangeSeat(ctx, id, newSeat)
+	return repoErrorToBbError(c.repo.ChangeSeat(ctx, id, newSeat))
 }
 
 func (c *core) ChangeDateSeat(ctx context.Context, id uint, newDate string, newSeat uint) error {
@@ -75,11 +86,11 @@ func (c *core) ChangeDateSeat(ctx context.Context, id uint, newDate string, newS
 	if err := checkCorrectSeat(newSeat); err != nil {
 		return err
 	}
-	return c.repo.ChangeDateSeat(ctx, id, newDate, newSeat)
+	return repoErrorToBbError(c.repo.ChangeDateSeat(ctx, id, newDate, newSeat))
 }
 
 func (c *core) Delete(ctx context.Context, id uint) error {
-	return c.repo.Delete(ctx, id)
+	return repoErrorToBbError(c.repo.Delete(ctx, id))
 }
 
 func checkCorrectRoute(route string) error {
@@ -113,4 +124,22 @@ func checkCorrectSeat(seat uint) error {
 		)
 	}
 	return nil
+}
+
+func repoErrorToBbError(err error) error {
+	switch {
+	case err == nil:
+		return nil
+	case errors.Is(err, repoPkg.ErrRepoBusBookingNotExists):
+		return ErrBusBookingNotExists
+	case errors.Is(err, repoPkg.ErrRepoBusBookingAlreadyExists):
+		return ErrBusBookingAlreadyExists
+	case errors.Is(err, repoPkg.ErrRepoRouteNameNotExist):
+		return ErrRouteNameNotExist
+	case errors.Is(err, repoPkg.ErrRepoInternal):
+		return ErrInternal
+	}
+
+	log.Printf("bus_booking::repoErrorToBbError unexpected error %s", err.Error())
+	return ErrInternal
 }
