@@ -38,7 +38,7 @@ func (r *repo) List(ctx context.Context, offset uint, limit uint) ([]models.BusB
 	rows, err := r.pool.Query(ctx, query, limit, offset)
 	if err != nil {
 		log.Printf("postgresRepoPkg::List query error %s", err.Error())
-		return nil, repoPkg.ErrInternal
+		return nil, repoPkg.ErrRepoInternal
 	}
 	defer rows.Close()
 
@@ -47,7 +47,7 @@ func (r *repo) List(ctx context.Context, offset uint, limit uint) ([]models.BusB
 		values, err := rows.Values()
 		if err != nil {
 			log.Printf("postgresRepoPkg::List empty rows after check %s", err.Error())
-			return nil, repoPkg.ErrInternal
+			return nil, repoPkg.ErrRepoInternal
 		}
 		result = append(result, models.BusBooking{
 			Id:    uint(values[0].(int32)),
@@ -62,20 +62,20 @@ func (r *repo) List(ctx context.Context, offset uint, limit uint) ([]models.BusB
 func (r *repo) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
 	existedRouteId, err := r.getRouteIdByRouteName(ctx, bb.Route)
 	if err != nil {
-		if errors.Is(err, repoPkg.ErrRouteNameNotExist) {
+		if errors.Is(err, repoPkg.ErrRepoRouteNameNotExist) {
 			return 0, err
 		}
 		log.Printf("postgresRepoPkg::Add getRouteIdByRouteName %s", err.Error())
-		return 0, repoPkg.ErrInternal
+		return 0, repoPkg.ErrRepoInternal
 	}
 
 	_, err = r.reverseSearch(ctx, bb.Route, bb.Date, bb.Seat)
 	if err == nil {
-		return 0, repoPkg.ErrBusBookingAlreadyExists
+		return 0, repoPkg.ErrRepoBusBookingAlreadyExists
 	}
-	if !errors.Is(err, repoPkg.ErrBusBookingNotExists) {
+	if !errors.Is(err, repoPkg.ErrRepoBusBookingNotExists) {
 		log.Printf("postgresRepoPkg::Add reverseSearch %s", err.Error())
-		return 0, repoPkg.ErrInternal
+		return 0, repoPkg.ErrRepoInternal
 	}
 
 	query := `
@@ -86,7 +86,7 @@ func (r *repo) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
 	rows, err := r.pool.Query(ctx, query, existedRouteId, bb.Date, bb.Seat)
 	if err != nil {
 		log.Printf("postgresRepoPkg::Add query error %s", err.Error())
-		return 0, repoPkg.ErrInternal
+		return 0, repoPkg.ErrRepoInternal
 	}
 	defer rows.Close()
 
@@ -94,12 +94,12 @@ func (r *repo) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
 		values, err := rows.Values()
 		if err != nil {
 			log.Printf("postgresRepoPkg::Add empty rows after check %s", err.Error())
-			return 0, repoPkg.ErrInternal
+			return 0, repoPkg.ErrRepoInternal
 		}
 		return uint(values[0].(int32)), nil
 	}
 	log.Printf("postgresRepoPkg::Add empty returning %s", err.Error())
-	return 0, repoPkg.ErrInternal
+	return 0, repoPkg.ErrRepoInternal
 }
 
 func (r *repo) Get(ctx context.Context, id uint) (*models.BusBooking, error) {
@@ -118,7 +118,7 @@ func (r *repo) Get(ctx context.Context, id uint) (*models.BusBooking, error) {
 	rows, err := r.pool.Query(ctx, query, id)
 	if err != nil {
 		log.Printf("postgresRepoPkg::Get query error %s", err.Error())
-		return nil, repoPkg.ErrInternal
+		return nil, repoPkg.ErrRepoInternal
 	}
 	defer rows.Close()
 
@@ -126,7 +126,7 @@ func (r *repo) Get(ctx context.Context, id uint) (*models.BusBooking, error) {
 		values, err := rows.Values()
 		if err != nil {
 			log.Printf("postgresRepoPkg::Get empty rows after check %s", err.Error())
-			return nil, repoPkg.ErrInternal
+			return nil, repoPkg.ErrRepoInternal
 		}
 		return &models.BusBooking{
 			Id:    uint(values[0].(int32)),
@@ -135,7 +135,7 @@ func (r *repo) Get(ctx context.Context, id uint) (*models.BusBooking, error) {
 			Seat:  uint(values[3].(int32)),
 		}, nil
 	}
-	return nil, repoPkg.ErrBusBookingNotExists
+	return nil, repoPkg.ErrRepoBusBookingNotExists
 }
 
 func (r *repo) ChangeSeat(ctx context.Context, id uint, newSeat uint) error {
@@ -149,11 +149,11 @@ func (r *repo) ChangeSeat(ctx context.Context, id uint, newSeat uint) error {
 
 	_, err = r.reverseSearch(ctx, existedBb.Route, existedBb.Date, newSeat)
 	if err == nil {
-		return repoPkg.ErrBusBookingAlreadyExists
+		return repoPkg.ErrRepoBusBookingAlreadyExists
 	}
-	if !errors.Is(err, repoPkg.ErrBusBookingNotExists) {
+	if !errors.Is(err, repoPkg.ErrRepoBusBookingNotExists) {
 		log.Printf("postgresRepoPkg::ChangeSeat reverseSearch %s", err.Error())
-		return repoPkg.ErrInternal
+		return repoPkg.ErrRepoInternal
 	}
 
 	query := `
@@ -164,7 +164,7 @@ func (r *repo) ChangeSeat(ctx context.Context, id uint, newSeat uint) error {
 	rows, err := r.pool.Query(ctx, query, id, newSeat)
 	if err != nil {
 		log.Printf("postgresRepoPkg::ChangeSeat query error %s", err.Error())
-		return repoPkg.ErrInternal
+		return repoPkg.ErrRepoInternal
 	}
 	defer rows.Close()
 	return nil
@@ -181,11 +181,11 @@ func (r *repo) ChangeDateSeat(ctx context.Context, id uint, newDate string, newS
 
 	_, err = r.reverseSearch(ctx, existedBb.Route, newDate, newSeat)
 	if err == nil {
-		return repoPkg.ErrBusBookingAlreadyExists
+		return repoPkg.ErrRepoBusBookingAlreadyExists
 	}
-	if !errors.Is(err, repoPkg.ErrBusBookingNotExists) {
+	if !errors.Is(err, repoPkg.ErrRepoBusBookingNotExists) {
 		log.Printf("postgresRepoPkg::ChangeDateSeat reverseSearch %s", err.Error())
-		return repoPkg.ErrInternal
+		return repoPkg.ErrRepoInternal
 	}
 
 	query := `
@@ -196,7 +196,7 @@ func (r *repo) ChangeDateSeat(ctx context.Context, id uint, newDate string, newS
 	rows, err := r.pool.Query(ctx, query, id, newSeat, newDate)
 	if err != nil {
 		log.Printf("postgresRepoPkg::ChangeDateSeat query error %s", err.Error())
-		return repoPkg.ErrInternal
+		return repoPkg.ErrRepoInternal
 	}
 	defer rows.Close()
 	return nil
@@ -216,7 +216,7 @@ func (r *repo) Delete(ctx context.Context, id uint) error {
 	rows, err := r.pool.Query(ctx, query, id)
 	if err != nil {
 		log.Printf("postgresRepoPkg::Delete query error %s", err.Error())
-		return repoPkg.ErrInternal
+		return repoPkg.ErrRepoInternal
 	}
 	defer rows.Close()
 	return nil
@@ -253,7 +253,7 @@ func (r *repo) reverseSearch(ctx context.Context, route string, date string, sea
 		}
 		return uint(values[0].(int32)), nil
 	}
-	return 0, repoPkg.ErrBusBookingNotExists
+	return 0, repoPkg.ErrRepoBusBookingNotExists
 }
 
 func (r *repo) getRouteIdByRouteName(ctx context.Context, routeName string) (uint, error) {
@@ -278,5 +278,5 @@ func (r *repo) getRouteIdByRouteName(ctx context.Context, routeName string) (uin
 		}
 		return uint(values[0].(int32)), nil
 	}
-	return 0, repoPkg.ErrRouteNameNotExist
+	return 0, repoPkg.ErrRepoRouteNameNotExist
 }
