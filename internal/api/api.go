@@ -2,7 +2,9 @@ package api
 
 import (
 	"context"
+	"log"
 
+	"github.com/pkg/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -28,7 +30,7 @@ func (i *implementation) BusBookingList(ctx context.Context, in *pb.BusBookingLi
 
 	bbs, err := i.busBooking.List(ctx, offset, limit)
 	if err != nil {
-		return nil, status.Error(codes.Internal, "")
+		return nil, bbErrorToStatusError(err)
 	}
 
 	result := make([]*pb.BusBooking, 0, len(bbs))
@@ -52,16 +54,16 @@ func (i *implementation) BusBookingAdd(ctx context.Context, in *pb.BusBookingAdd
 		Date:  in.GetDate(),
 		Seat:  uint(in.GetSeat()),
 	})
-	if err != nil { // TODO enrich work with errors
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+	if err != nil {
+		return nil, bbErrorToStatusError(err)
 	}
 	return &pb.BusBookingAddResponse{Id: uint32(id)}, nil
 }
 
 func (i *implementation) BusBookingGet(ctx context.Context, in *pb.BusBookingGetRequest) (*pb.BusBookingGetResponse, error) {
 	bb, err := i.busBooking.Get(ctx, uint(in.GetId()))
-	if err != nil { // TODO enrich work with errors
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+	if err != nil {
+		return nil, bbErrorToStatusError(err)
 	}
 	return &pb.BusBookingGetResponse{BusBooking: &pb.BusBooking{
 		Id:    uint32(bb.Id),
@@ -77,8 +79,8 @@ func (i *implementation) BusBookingChangeSeat(ctx context.Context, in *pb.BusBoo
 		uint(in.GetId()),
 		uint(in.GetSeat()),
 	)
-	if err != nil { // TODO enrich work with errors
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+	if err != nil {
+		return nil, bbErrorToStatusError(err)
 	}
 	return &pb.BusBookingChangeSeatResponse{}, nil
 }
@@ -90,16 +92,34 @@ func (i *implementation) BusBookingChangeDateSeat(ctx context.Context, in *pb.Bu
 		in.GetDate(),
 		uint(in.GetSeat()),
 	)
-	if err != nil { // TODO enrich work with errors
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+	if err != nil {
+		return nil, bbErrorToStatusError(err)
 	}
 	return &pb.BusBookingChangeDateSeatResponse{}, nil
 }
 
 func (i *implementation) BusBookingDelete(ctx context.Context, in *pb.BusBookingDeleteRequest) (*pb.BusBookingDeleteResponse, error) {
 	err := i.busBooking.Delete(ctx, uint(in.GetId()))
-	if err != nil { // TODO enrich work with errors
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+	if err != nil {
+		return nil, bbErrorToStatusError(err)
 	}
 	return &pb.BusBookingDeleteResponse{}, nil
+}
+
+func bbErrorToStatusError(err error) error {
+	switch {
+	case errors.Is(err, bbPkg.ErrValidate):
+		return status.Error(codes.InvalidArgument, err.Error())
+	case errors.Is(err, bbPkg.ErrBusBookingNotExists):
+		return status.Error(codes.NotFound, err.Error())
+	case errors.Is(err, bbPkg.ErrBusBookingAlreadyExists):
+		return status.Error(codes.AlreadyExists, err.Error())
+	case errors.Is(err, bbPkg.ErrRouteNameNotExist):
+		return status.Error(codes.NotFound, err.Error())
+	case errors.Is(err, bbPkg.ErrInternal):
+		return status.Error(codes.Internal, err.Error())
+	}
+
+	log.Printf("api::bbErrorToStatusError unexpected error %s", err.Error())
+	return status.Error(codes.Internal, err.Error())
 }
