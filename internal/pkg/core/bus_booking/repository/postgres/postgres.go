@@ -69,9 +69,9 @@ func (r *repo) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
 		return 0, repoPkg.ErrInternal
 	}
 
-	existedId, err := r.reverseSearch(ctx, bb.Route, bb.Date, bb.Seat)
+	_, err = r.reverseSearch(ctx, bb.Route, bb.Date, bb.Seat)
 	if err == nil {
-		return 0, errors.Wrapf(repoPkg.ErrBusBookingAlreadyExists, "%d", existedId)
+		return 0, repoPkg.ErrBusBookingAlreadyExists
 	}
 	if !errors.Is(err, repoPkg.ErrBusBookingNotExists) {
 		log.Printf("postgresRepoPkg::Add reverseSearch %s", err.Error())
@@ -147,9 +147,9 @@ func (r *repo) ChangeSeat(ctx context.Context, id uint, newSeat uint) error {
 		return nil // for idempotency
 	}
 
-	existedId, err := r.reverseSearch(ctx, existedBb.Route, existedBb.Date, newSeat)
+	_, err = r.reverseSearch(ctx, existedBb.Route, existedBb.Date, newSeat)
 	if err == nil {
-		return errors.Wrapf(repoPkg.ErrBusBookingAlreadyExists, "%d", existedId)
+		return repoPkg.ErrBusBookingAlreadyExists
 	}
 	if !errors.Is(err, repoPkg.ErrBusBookingNotExists) {
 		log.Printf("postgresRepoPkg::ChangeSeat reverseSearch %s", err.Error())
@@ -179,9 +179,9 @@ func (r *repo) ChangeDateSeat(ctx context.Context, id uint, newDate string, newS
 		return nil // for idempotency
 	}
 
-	existedId, err := r.reverseSearch(ctx, existedBb.Route, newDate, newSeat)
+	_, err = r.reverseSearch(ctx, existedBb.Route, newDate, newSeat)
 	if err == nil {
-		return errors.Wrapf(repoPkg.ErrBusBookingAlreadyExists, "%d", existedId)
+		return repoPkg.ErrBusBookingAlreadyExists
 	}
 	if !errors.Is(err, repoPkg.ErrBusBookingNotExists) {
 		log.Printf("postgresRepoPkg::ChangeDateSeat reverseSearch %s", err.Error())
