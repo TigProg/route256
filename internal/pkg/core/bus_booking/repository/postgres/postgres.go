@@ -60,21 +60,21 @@ func (r *repo) List(ctx context.Context, offset uint, limit uint) ([]models.BusB
 }
 
 func (r *repo) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
-	existedId, err := r.reverseSearch(ctx, bb.Route, bb.Date, bb.Seat)
-	if err == nil {
-		return 0, errors.Wrapf(repoPkg.ErrBusBookingAlreadyExists, "%d", existedId)
-	}
-	if !errors.Is(err, repoPkg.ErrBusBookingNotExists) {
-		log.Printf("postgresRepoPkg::Add reverseSearch %s", err.Error())
-		return 0, repoPkg.ErrInternal
-	}
-
 	existedRouteId, err := r.getRouteIdByRouteName(ctx, bb.Route)
 	if err != nil {
 		if errors.Is(err, repoPkg.ErrRouteNameNotExist) {
 			return 0, err
 		}
 		log.Printf("postgresRepoPkg::Add getRouteIdByRouteName %s", err.Error())
+		return 0, repoPkg.ErrInternal
+	}
+
+	existedId, err := r.reverseSearch(ctx, bb.Route, bb.Date, bb.Seat)
+	if err == nil {
+		return 0, errors.Wrapf(repoPkg.ErrBusBookingAlreadyExists, "%d", existedId)
+	}
+	if !errors.Is(err, repoPkg.ErrBusBookingNotExists) {
+		log.Printf("postgresRepoPkg::Add reverseSearch %s", err.Error())
 		return 0, repoPkg.ErrInternal
 	}
 
