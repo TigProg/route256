@@ -108,8 +108,6 @@ func (i *implementation) BusBookingDelete(ctx context.Context, in *pb.BusBooking
 
 func repoErrorToStatusError(err error) error {
 	switch {
-	case err == nil:
-		return nil
 	case errors.Is(err, repoPkg.ErrRepoBusBookingNotExists):
 		return status.Error(codes.NotFound, err.Error())
 	case errors.Is(err, repoPkg.ErrRepoBusBookingAlreadyExists):

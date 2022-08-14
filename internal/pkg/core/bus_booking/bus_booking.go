@@ -50,7 +50,10 @@ type core struct {
 
 func (c *core) List(ctx context.Context, offset uint, limit uint) ([]models.BusBooking, error) {
 	result, err := c.repo.List(ctx, offset, limit)
-	return result, repoErrorToBbError(err)
+	if err != nil {
+		return nil, repoErrorToBbError(err)
+	}
+	return result, nil
 }
 
 func (c *core) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
@@ -63,20 +66,32 @@ func (c *core) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
 	if err := checkCorrectSeat(bb.Seat); err != nil {
 		return 0, err
 	}
+
 	result, err := c.repo.Add(ctx, bb)
-	return result, repoErrorToBbError(err)
+	if err != nil {
+		return 0, repoErrorToBbError(err)
+	}
+	return result, nil
 }
 
 func (c *core) Get(ctx context.Context, id uint) (*models.BusBooking, error) {
 	result, err := c.repo.Get(ctx, id)
-	return result, repoErrorToBbError(err)
+	if err != nil {
+		return nil, repoErrorToBbError(err)
+	}
+	return result, nil
 }
 
 func (c *core) ChangeSeat(ctx context.Context, id uint, newSeat uint) error {
 	if err := checkCorrectSeat(newSeat); err != nil {
 		return err
 	}
-	return repoErrorToBbError(c.repo.ChangeSeat(ctx, id, newSeat))
+
+	err := c.repo.ChangeSeat(ctx, id, newSeat)
+	if err != nil {
+		return repoErrorToBbError(err)
+	}
+	return nil
 }
 
 func (c *core) ChangeDateSeat(ctx context.Context, id uint, newDate string, newSeat uint) error {
@@ -86,11 +101,20 @@ func (c *core) ChangeDateSeat(ctx context.Context, id uint, newDate string, newS
 	if err := checkCorrectSeat(newSeat); err != nil {
 		return err
 	}
-	return repoErrorToBbError(c.repo.ChangeDateSeat(ctx, id, newDate, newSeat))
+
+	err := c.repo.ChangeDateSeat(ctx, id, newDate, newSeat)
+	if err != nil {
+		return repoErrorToBbError(err)
+	}
+	return nil
 }
 
 func (c *core) Delete(ctx context.Context, id uint) error {
-	return repoErrorToBbError(c.repo.Delete(ctx, id))
+	err := c.repo.Delete(ctx, id)
+	if err != nil {
+		return repoErrorToBbError(err)
+	}
+	return nil
 }
 
 func checkCorrectRoute(route string) error {
@@ -128,8 +152,6 @@ func checkCorrectSeat(seat uint) error {
 
 func repoErrorToBbError(err error) error {
 	switch {
-	case err == nil:
-		return nil
 	case errors.Is(err, repoPkg.ErrRepoBusBookingNotExists):
 		return ErrBusBookingNotExists
 	case errors.Is(err, repoPkg.ErrRepoBusBookingAlreadyExists):
