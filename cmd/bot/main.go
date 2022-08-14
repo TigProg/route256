@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	configPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/config"
 	bbPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking"
+	repoGRPCPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository/grpc_repo"
 	repoPostgresPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository/postgres"
 )
 
@@ -42,8 +43,11 @@ func main() {
 		config.MaxConns = configPkg.PosgtreSQLMaxConns
 	}
 
-	repo := repoPostgresPkg.New(pool)
-	//repo := repoLocalPkg.New()  // for local cache
+	repoReal := repoPostgresPkg.New(pool)
+	go runRepoGRPCServer(ctx, repoReal, configPkg.RepoGRPCServerAddress)
+
+	client := prepareRepoGRPCClient(configPkg.RepoGRPCServerAddress)
+	repo := repoGRPCPkg.New(client)
 
 	bb := bbPkg.New(repo)
 
