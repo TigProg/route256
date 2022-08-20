@@ -4,18 +4,23 @@ import (
 	"context"
 	"log"
 
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v4"
 	"github.com/pkg/errors"
 	"gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/models"
 	repoPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository"
 )
 
-func New(pool *pgxpool.Pool) repoPkg.Interface {
+type PoolInterface interface {
+	Query(context.Context, string, ...interface{}) (pgx.Rows, error)
+	Close()
+}
+
+func New(pool PoolInterface) repoPkg.Interface {
 	return &repo{pool}
 }
 
 type repo struct {
-	pool *pgxpool.Pool
+	pool PoolInterface
 }
 
 func (r *repo) List(ctx context.Context, offset uint, limit uint) ([]models.BusBooking, error) {
