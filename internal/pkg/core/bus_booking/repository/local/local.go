@@ -5,7 +5,6 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/pkg/errors"
 	configPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/config"
 	"gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/models"
 	repoPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository"
@@ -74,11 +73,11 @@ func (c *local) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
 	}()
 
 	if _, found := routeAllowList[bb.Route]; !found {
-		return 0, repoPkg.ErrRouteNameNotExist
+		return 0, repoPkg.ErrRepoRouteNameNotExist
 	}
 
-	if existedId, err := c.reverseSearch(bb.Route, bb.Date, bb.Seat); err == nil {
-		return 0, errors.Wrapf(repoPkg.ErrBusBookingAlreadyExists, "%d", existedId)
+	if _, err := c.reverseSearch(bb.Route, bb.Date, bb.Seat); err == nil {
+		return 0, repoPkg.ErrRepoBusBookingAlreadyExists
 	}
 
 	var id = c.nextId
@@ -100,7 +99,7 @@ func (c *local) Get(ctx context.Context, id uint) (*models.BusBooking, error) {
 	if bb, ok := c.data[id]; ok {
 		return bb, nil
 	}
-	return nil, errors.Wrapf(repoPkg.ErrBusBookingNotExists, "%d", id)
+	return nil, repoPkg.ErrRepoBusBookingNotExists
 }
 
 func (c *local) ChangeSeat(ctx context.Context, id uint, newSeat uint) error {
@@ -113,14 +112,14 @@ func (c *local) ChangeSeat(ctx context.Context, id uint, newSeat uint) error {
 
 	bb, ok := c.data[id]
 	if !ok {
-		return errors.Wrapf(repoPkg.ErrBusBookingNotExists, "%d", id)
+		return repoPkg.ErrRepoBusBookingNotExists
 	}
 	if bb.Seat == newSeat {
 		return nil // for idempotency
 	}
 
-	if existedId, err := c.reverseSearch(bb.Route, bb.Date, newSeat); err == nil {
-		return errors.Wrapf(repoPkg.ErrBusBookingAlreadyExists, "%d", existedId)
+	if _, err := c.reverseSearch(bb.Route, bb.Date, newSeat); err == nil {
+		return repoPkg.ErrRepoBusBookingAlreadyExists
 	}
 	bb.Seat = newSeat
 	return nil
@@ -136,14 +135,14 @@ func (c *local) ChangeDateSeat(ctx context.Context, id uint, newDate string, new
 
 	bb, ok := c.data[id]
 	if !ok {
-		return errors.Wrapf(repoPkg.ErrBusBookingNotExists, "%d", id)
+		return repoPkg.ErrRepoBusBookingNotExists
 	}
 	if bb.Seat == newSeat && bb.Date == newDate {
 		return nil // for idempotency
 	}
 
-	if existedId, err := c.reverseSearch(bb.Route, newDate, newSeat); err == nil {
-		return errors.Wrapf(repoPkg.ErrBusBookingAlreadyExists, "%d", existedId)
+	if _, err := c.reverseSearch(bb.Route, newDate, newSeat); err == nil {
+		return repoPkg.ErrRepoBusBookingAlreadyExists
 	}
 	bb.Seat = newSeat
 	bb.Date = newDate
@@ -162,7 +161,7 @@ func (c *local) Delete(ctx context.Context, id uint) error {
 		delete(c.data, id)
 		return nil
 	}
-	return errors.Wrapf(repoPkg.ErrBusBookingNotExists, "%d", id)
+	return repoPkg.ErrRepoBusBookingNotExists
 }
 
 // reverseSearch - not thread-safe
@@ -172,7 +171,7 @@ func (c *local) reverseSearch(route string, date string, seat uint) (uint, error
 			return bb.Id, nil
 		}
 	}
-	return 0, repoPkg.ErrBusBookingNotExists
+	return 0, repoPkg.ErrRepoBusBookingNotExists
 }
 
 func min(a, b int) int {

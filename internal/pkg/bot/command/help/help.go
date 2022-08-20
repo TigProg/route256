@@ -8,7 +8,7 @@ import (
 )
 
 func New(extendedMap map[string]string) commandPkg.Interface {
-	if extendedMap == nil { // TODO
+	if extendedMap == nil {
 		extendedMap = map[string]string{}
 	}
 	return &command{

@@ -13,7 +13,7 @@ import (
 func main() {
 	conns, err := grpc.Dial(configPkg.GRPCClientTarget, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 
 	client := pb.NewAdminClient(conns)
@@ -29,7 +29,7 @@ func main() {
 		Route: "aaaa", Date: "2022-01-01", Seat: 1,
 	})
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 	log.Println("response: ", responseAdd)
 
@@ -37,7 +37,7 @@ func main() {
 		Route: "bbbb", Date: "2022-01-02", Seat: 2,
 	})
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 	log.Println("response: ", responseAdd)
 
@@ -45,7 +45,7 @@ func main() {
 		Route: "cccc", Date: "2022-01-03", Seat: 3,
 	})
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 	log.Println("response: ", responseAdd)
 
@@ -53,13 +53,13 @@ func main() {
 		Route: "dddd", Date: "2022-01-04", Seat: 4,
 	})
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 	log.Println("response: ", responseAdd)
 
 	responseList, err = client.BusBookingList(ctx, &pb.BusBookingListRequest{})
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 	log.Println("response: ", responseList)
 }

@@ -5,32 +5,32 @@ import (
 	"log"
 
 	"github.com/pkg/errors"
+	repoPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	bbPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking"
 	"gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/models"
 	pb "gitlab.ozon.dev/tigprog/bus_booking/pkg/api"
 )
 
-func New(busBooking bbPkg.Interface) pb.AdminServer {
+func New(repo repoPkg.Interface) pb.AdminServer { // TODO maybe another pb
 	return &implementation{
-		busBooking: busBooking,
+		repo: repo,
 	}
 }
 
 type implementation struct {
 	pb.UnimplementedAdminServer
-	busBooking bbPkg.Interface
+	repo repoPkg.Interface
 }
 
 func (i *implementation) BusBookingList(ctx context.Context, in *pb.BusBookingListRequest) (*pb.BusBookingListResponse, error) {
 	offset := uint(in.GetOffset())
 	limit := uint(in.GetLimit())
 
-	bbs, err := i.busBooking.List(ctx, offset, limit)
+	bbs, err := i.repo.List(ctx, offset, limit)
 	if err != nil {
-		return nil, bbErrorToStatusError(err)
+		return nil, repoErrorToStatusError(err)
 	}
 
 	result := make([]*pb.BusBooking, 0, len(bbs))
@@ -48,22 +48,22 @@ func (i *implementation) BusBookingList(ctx context.Context, in *pb.BusBookingLi
 }
 
 func (i *implementation) BusBookingAdd(ctx context.Context, in *pb.BusBookingAddRequest) (*pb.BusBookingAddResponse, error) {
-	id, err := i.busBooking.Add(ctx, models.BusBooking{
+	id, err := i.repo.Add(ctx, models.BusBooking{
 		Id:    0,
 		Route: in.GetRoute(),
 		Date:  in.GetDate(),
 		Seat:  uint(in.GetSeat()),
 	})
 	if err != nil {
-		return nil, bbErrorToStatusError(err)
+		return nil, repoErrorToStatusError(err)
 	}
 	return &pb.BusBookingAddResponse{Id: uint32(id)}, nil
 }
 
 func (i *implementation) BusBookingGet(ctx context.Context, in *pb.BusBookingGetRequest) (*pb.BusBookingGetResponse, error) {
-	bb, err := i.busBooking.Get(ctx, uint(in.GetId()))
+	bb, err := i.repo.Get(ctx, uint(in.GetId()))
 	if err != nil {
-		return nil, bbErrorToStatusError(err)
+		return nil, repoErrorToStatusError(err)
 	}
 	return &pb.BusBookingGetResponse{BusBooking: &pb.BusBooking{
 		Id:    uint32(bb.Id),
@@ -74,52 +74,50 @@ func (i *implementation) BusBookingGet(ctx context.Context, in *pb.BusBookingGet
 }
 
 func (i *implementation) BusBookingChangeSeat(ctx context.Context, in *pb.BusBookingChangeSeatRequest) (*pb.BusBookingChangeSeatResponse, error) {
-	err := i.busBooking.ChangeSeat(
+	err := i.repo.ChangeSeat(
 		ctx,
 		uint(in.GetId()),
 		uint(in.GetSeat()),
 	)
 	if err != nil {
-		return nil, bbErrorToStatusError(err)
+		return nil, repoErrorToStatusError(err)
 	}
 	return &pb.BusBookingChangeSeatResponse{}, nil
 }
 
 func (i *implementation) BusBookingChangeDateSeat(ctx context.Context, in *pb.BusBookingChangeDateSeatRequest) (*pb.BusBookingChangeDateSeatResponse, error) {
-	err := i.busBooking.ChangeDateSeat(
+	err := i.repo.ChangeDateSeat(
 		ctx,
 		uint(in.GetId()),
 		in.GetDate(),
 		uint(in.GetSeat()),
 	)
 	if err != nil {
-		return nil, bbErrorToStatusError(err)
+		return nil, repoErrorToStatusError(err)
 	}
 	return &pb.BusBookingChangeDateSeatResponse{}, nil
 }
 
 func (i *implementation) BusBookingDelete(ctx context.Context, in *pb.BusBookingDeleteRequest) (*pb.BusBookingDeleteResponse, error) {
-	err := i.busBooking.Delete(ctx, uint(in.GetId()))
+	err := i.repo.Delete(ctx, uint(in.GetId()))
 	if err != nil {
-		return nil, bbErrorToStatusError(err)
+		return nil, repoErrorToStatusError(err)
 	}
 	return &pb.BusBookingDeleteResponse{}, nil
 }
 
-func bbErrorToStatusError(err error) error {
+func repoErrorToStatusError(err error) error {
 	switch {
-	case errors.Is(err, bbPkg.ErrValidate):
-		return status.Error(codes.InvalidArgument, err.Error())
-	case errors.Is(err, bbPkg.ErrBusBookingNotExists):
+	case errors.Is(err, repoPkg.ErrRepoBusBookingNotExists):
 		return status.Error(codes.NotFound, err.Error())
-	case errors.Is(err, bbPkg.ErrBusBookingAlreadyExists):
+	case errors.Is(err, repoPkg.ErrRepoBusBookingAlreadyExists):
 		return status.Error(codes.AlreadyExists, err.Error())
-	case errors.Is(err, bbPkg.ErrRouteNameNotExist):
+	case errors.Is(err, repoPkg.ErrRepoRouteNameNotExist):
 		return status.Error(codes.NotFound, err.Error())
-	case errors.Is(err, bbPkg.ErrInternal):
+	case errors.Is(err, repoPkg.ErrRepoInternal):
 		return status.Error(codes.Internal, err.Error())
 	}
 
-	log.Printf("api::bbErrorToStatusError unexpected error %s", err.Error())
+	log.Printf("data_api::repoErrorToStatusError unexpected error %s", err.Error())
 	return status.Error(codes.Internal, err.Error())
 }

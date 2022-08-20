@@ -9,6 +9,8 @@ const (
 	GRPCClientTarget  = ":8081"
 	GRPCServerAddress = ":8081"
 
+	RepoGRPCServerAddress = ":5999"
+
 	RESTServerAddress = ":8080"
 
 	LocalCachePoolSize = 10
