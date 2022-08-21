@@ -7,6 +7,7 @@ require (
 	github.com/golang/mock v1.5.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.1
 	github.com/jackc/pgx/v4 v4.17.0
+	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/pashagolub/pgxmock v1.8.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.8.0
