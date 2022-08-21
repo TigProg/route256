@@ -13,18 +13,18 @@ import (
 	pb "gitlab.ozon.dev/tigprog/bus_booking/pkg/api"
 )
 
-func New(busBooking bbPkg.Interface) pb.AdminServer {
-	return &implementation{
+func New(busBooking bbPkg.Interface) *Implementation {
+	return &Implementation{
 		busBooking: busBooking,
 	}
 }
 
-type implementation struct {
+type Implementation struct {
 	pb.UnimplementedAdminServer
 	busBooking bbPkg.Interface
 }
 
-func (i *implementation) BusBookingList(ctx context.Context, in *pb.BusBookingListRequest) (*pb.BusBookingListResponse, error) {
+func (i *Implementation) BusBookingList(ctx context.Context, in *pb.BusBookingListRequest) (*pb.BusBookingListResponse, error) {
 	offset := uint(in.GetOffset())
 	limit := uint(in.GetLimit())
 
@@ -47,7 +47,7 @@ func (i *implementation) BusBookingList(ctx context.Context, in *pb.BusBookingLi
 	}, nil
 }
 
-func (i *implementation) BusBookingAdd(ctx context.Context, in *pb.BusBookingAddRequest) (*pb.BusBookingAddResponse, error) {
+func (i *Implementation) BusBookingAdd(ctx context.Context, in *pb.BusBookingAddRequest) (*pb.BusBookingAddResponse, error) {
 	id, err := i.busBooking.Add(ctx, models.BusBooking{
 		Id:    0,
 		Route: in.GetRoute(),
@@ -60,7 +60,7 @@ func (i *implementation) BusBookingAdd(ctx context.Context, in *pb.BusBookingAdd
 	return &pb.BusBookingAddResponse{Id: uint32(id)}, nil
 }
 
-func (i *implementation) BusBookingGet(ctx context.Context, in *pb.BusBookingGetRequest) (*pb.BusBookingGetResponse, error) {
+func (i *Implementation) BusBookingGet(ctx context.Context, in *pb.BusBookingGetRequest) (*pb.BusBookingGetResponse, error) {
 	bb, err := i.busBooking.Get(ctx, uint(in.GetId()))
 	if err != nil {
 		return nil, bbErrorToStatusError(err)
@@ -73,7 +73,7 @@ func (i *implementation) BusBookingGet(ctx context.Context, in *pb.BusBookingGet
 	}}, nil
 }
 
-func (i *implementation) BusBookingChangeSeat(ctx context.Context, in *pb.BusBookingChangeSeatRequest) (*pb.BusBookingChangeSeatResponse, error) {
+func (i *Implementation) BusBookingChangeSeat(ctx context.Context, in *pb.BusBookingChangeSeatRequest) (*pb.BusBookingChangeSeatResponse, error) {
 	err := i.busBooking.ChangeSeat(
 		ctx,
 		uint(in.GetId()),
@@ -85,7 +85,7 @@ func (i *implementation) BusBookingChangeSeat(ctx context.Context, in *pb.BusBoo
 	return &pb.BusBookingChangeSeatResponse{}, nil
 }
 
-func (i *implementation) BusBookingChangeDateSeat(ctx context.Context, in *pb.BusBookingChangeDateSeatRequest) (*pb.BusBookingChangeDateSeatResponse, error) {
+func (i *Implementation) BusBookingChangeDateSeat(ctx context.Context, in *pb.BusBookingChangeDateSeatRequest) (*pb.BusBookingChangeDateSeatResponse, error) {
 	err := i.busBooking.ChangeDateSeat(
 		ctx,
 		uint(in.GetId()),
@@ -98,7 +98,7 @@ func (i *implementation) BusBookingChangeDateSeat(ctx context.Context, in *pb.Bu
 	return &pb.BusBookingChangeDateSeatResponse{}, nil
 }
 
-func (i *implementation) BusBookingDelete(ctx context.Context, in *pb.BusBookingDeleteRequest) (*pb.BusBookingDeleteResponse, error) {
+func (i *Implementation) BusBookingDelete(ctx context.Context, in *pb.BusBookingDeleteRequest) (*pb.BusBookingDeleteResponse, error) {
 	err := i.busBooking.Delete(ctx, uint(in.GetId()))
 	if err != nil {
 		return nil, bbErrorToStatusError(err)
