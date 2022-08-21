@@ -12,19 +12,44 @@ import (
 )
 
 func TestAddBusBookingIntegration(t *testing.T) {
-	t.Run("fail::validation_error", func(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
 		// Arrange
+		const (
+			bbRoute = "ufaspb"
+			bbDate  = "2025-01-01"
+			bbSeat  = uint(2)
+		)
+
 		// Act
 		ctx := context.Background()
 		request := pb.BusBookingAddRequest{
-			Route: "spbufa",
-			Date:  "2020-01-01 10:00:00",
-			Seat:  uint32(25),
+			Route: bbRoute,
+			Date:  bbDate,
+			Seat:  uint32(bbSeat),
 		}
-		response, err := BusBookingClient.BusBookingAdd(ctx, &request)
+		_, err := BusBookingClient.BusBookingAdd(ctx, &request)
 
 		// Assert
-		assert.Contains(t, err.Error(), "expected correct date in format [2006-01-02], got [2020-01-01 10:00:00]")
-		assert.Nil(t, response)
+		assert.NoError(t, err)
+	})
+	t.Run("fail::invalid_route", func(t *testing.T) {
+		// Arrange
+		const (
+			bbRoute = "abcdefg"
+			bbDate  = "2025-01-01"
+			bbSeat  = uint(2)
+		)
+
+		// Act
+		ctx := context.Background()
+		request := pb.BusBookingAddRequest{
+			Route: bbRoute,
+			Date:  bbDate,
+			Seat:  uint32(bbSeat),
+		}
+		_, err := BusBookingClient.BusBookingAdd(ctx, &request)
+
+		// Assert
+		assert.Contains(t, err.Error(), "route not exist")
 	})
 }
