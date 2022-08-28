@@ -25,4 +25,12 @@ const (
 	PosgtreSQLMaxConnLifetime = time.Hour
 	PosgtreSQLMinConns        = 2
 	PosgtreSQLMaxConns        = 4
+
+	KafkaBrokers                 = "localhost:9095,localhost:9096,localhost:9097"
+	KafkaProducerReturnSuccesses = true
+	KafkaConsumerSleep           = 10 * time.Second
+	KafkaTopic1                  = "test1"
+	KafkaTopic2                  = "test2"
+	KafkaGroupId1                = "group_1"
+	KafkaGroupId2                = "group_2"
 )

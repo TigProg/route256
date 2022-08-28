@@ -2,3 +2,4 @@
 /api/google/
 /bin/
 /postgresql/
+/kafka_data/
