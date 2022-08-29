@@ -13,7 +13,7 @@ import (
 	pb "gitlab.ozon.dev/tigprog/bus_booking/pkg/api"
 )
 
-func New(repo repoPkg.Interface) pb.AdminServer { // TODO maybe another pb
+func New(repo repoPkg.Interface) pb.AdminServer {
 	return &implementation{
 		repo: repo,
 	}

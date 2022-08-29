@@ -60,7 +60,7 @@ func (c *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim saram
 				log.Printf("%v", msg.Value)
 				err := c.handle(msg.Value)
 				if err != nil {
-					// TODO
+					log.Panic(err)
 				}
 				session.MarkMessage(msg, "")
 			}
@@ -94,18 +94,18 @@ func (c *Consumer) handle(value []byte) error {
 
 	// TODO add single handler
 	switch commonMsg.Key {
-	case "add":
+	case kafkaPkg.AddKey:
 		addMsg := specificMsg.(kafkaPkg.AddMessage)
 		_, err := c.repo.Add(ctx, addMsg.Bb)
 		return err
-	case "change_seat":
+	case kafkaPkg.ChangeSeatKey:
 		changeSeatMsg := specificMsg.(kafkaPkg.ChangeSeatMessage)
 		return c.repo.ChangeSeat(
 			ctx,
 			changeSeatMsg.Id,
 			changeSeatMsg.NewSeat,
 		)
-	case "change_date_seat":
+	case kafkaPkg.ChangeDateSeatKey:
 		changeDateSeatMsg := specificMsg.(kafkaPkg.ChangeDateSeatMessage)
 		return c.repo.ChangeDateSeat(
 			ctx,
@@ -113,7 +113,7 @@ func (c *Consumer) handle(value []byte) error {
 			changeDateSeatMsg.NewDate,
 			changeDateSeatMsg.NewSeat,
 		)
-	case "delete":
+	case kafkaPkg.DeleteKey:
 		deleteMsg := specificMsg.(kafkaPkg.DeleteMessage)
 		return c.repo.Delete(
 			ctx,
