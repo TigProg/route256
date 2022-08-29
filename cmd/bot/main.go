@@ -73,7 +73,7 @@ func main() {
 	if err != nil {
 		log.Panic(err)
 	}
-	go consumer.Run(context.Background(), []string{topic}, configPkg.KafkaConsumerSleep)
+	go consumer.Run(ctx, []string{topic}, configPkg.KafkaConsumerSleep)
 
 	producer, err := kafkaProducerPkg.New(brokers)
 	if err != nil {

@@ -13,10 +13,11 @@ const (
 	ChangeSeatKey     = "change_seat"
 	ChangeDateSeatKey = "change_date_seat"
 	DeleteKey         = "delete"
+
+	SpanContextHeaderKey = "Span-Context"
 )
 
 type CommonMessage struct {
-	// trace
 	Key   string
 	Id    uint
 	Route string

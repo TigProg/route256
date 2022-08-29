@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"go.opencensus.io/trace"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -59,7 +60,7 @@ func (c *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim saram
 				log.Info("consumer data channel closed")
 				return nil
 			} else {
-				err := c.handle(msg.Value)
+				err := c.handle(msg)
 				if err != nil {
 					log.Panicf("error on handle %v: %v", msg.Value, err)
 				}
@@ -79,7 +80,20 @@ func (c *Consumer) Run(ctx context.Context, topics []string, consumerSleep time.
 	}
 }
 
-func (c *Consumer) handle(value []byte) error {
+func (c *Consumer) handle(msg *sarama.ConsumerMessage) error {
+	value := msg.Value
+	headers := msg.Headers
+
+	var spanContext trace.SpanContext
+	for _, header := range headers {
+		if string(header.Key[:]) == kafkaPkg.SpanContextHeaderKey {
+			if err := json.Unmarshal(header.Value, &spanContext); err != nil {
+				log.Error("broken context")
+			}
+			break
+		}
+	}
+
 	commonMsg := kafkaPkg.CommonMessage{}
 	err := json.Unmarshal(value, &commonMsg)
 	if err != nil {
@@ -93,25 +107,28 @@ func (c *Consumer) handle(value []byte) error {
 		return err // TODO custom error
 	}
 
-	ctx := context.Background() // TODO
+	newCtx, span := trace.StartSpanWithRemoteParent(
+		context.Background(), "handle", spanContext,
+	)
+	defer span.End()
 
 	// TODO add single handler
 	switch commonMsg.Key {
 	case kafkaPkg.AddKey:
 		addMsg := specificMsg.(kafkaPkg.AddMessage)
-		_, err := c.repo.Add(ctx, addMsg.Bb)
+		_, err := c.repo.Add(newCtx, addMsg.Bb)
 		return err
 	case kafkaPkg.ChangeSeatKey:
 		changeSeatMsg := specificMsg.(kafkaPkg.ChangeSeatMessage)
 		return c.repo.ChangeSeat(
-			ctx,
+			newCtx,
 			changeSeatMsg.Id,
 			changeSeatMsg.NewSeat,
 		)
 	case kafkaPkg.ChangeDateSeatKey:
 		changeDateSeatMsg := specificMsg.(kafkaPkg.ChangeDateSeatMessage)
 		return c.repo.ChangeDateSeat(
-			ctx,
+			newCtx,
 			changeDateSeatMsg.Id,
 			changeDateSeatMsg.NewDate,
 			changeDateSeatMsg.NewSeat,
@@ -119,7 +136,7 @@ func (c *Consumer) handle(value []byte) error {
 	case kafkaPkg.DeleteKey:
 		deleteMsg := specificMsg.(kafkaPkg.DeleteMessage)
 		return c.repo.Delete(
-			ctx,
+			newCtx,
 			deleteMsg.Id,
 		)
 	default:

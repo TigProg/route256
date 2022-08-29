@@ -3,6 +3,7 @@ package rw_repo
 import (
 	"context"
 	"encoding/json"
+	"go.opencensus.io/trace"
 
 	"github.com/Shopify/sarama"
 	log "github.com/sirupsen/logrus"
@@ -31,7 +32,11 @@ func (r *repo) List(ctx context.Context, offset uint, limit uint) ([]models.BusB
 
 func (r *repo) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
 	addMsg := kafkaPkg.AddMessage{Bb: bb}
-	err := r.sendSpecificMessage(addMsg)
+
+	newCtx, span := trace.StartSpan(ctx, "Add")
+	defer span.End()
+
+	err := r.sendSpecificMessage(newCtx, addMsg)
 	if err != nil {
 		log.Errorf("rw_repo::Add error %s", err.Error())
 		return 0, err
@@ -48,7 +53,11 @@ func (r *repo) ChangeSeat(ctx context.Context, id uint, newSeat uint) error {
 		Id:      id,
 		NewSeat: newSeat,
 	}
-	err := r.sendSpecificMessage(changeSeatMsg)
+
+	newCtx, span := trace.StartSpan(ctx, "ChangeSeat")
+	defer span.End()
+
+	err := r.sendSpecificMessage(newCtx, changeSeatMsg)
 	if err != nil {
 		log.Errorf("rw_repo::ChangeSeat error %s", err.Error())
 		return err
@@ -62,7 +71,11 @@ func (r *repo) ChangeDateSeat(ctx context.Context, id uint, newDate string, newS
 		NewDate: newDate,
 		NewSeat: newSeat,
 	}
-	err := r.sendSpecificMessage(changeDateSeatMsg)
+
+	newCtx, span := trace.StartSpan(ctx, "ChangeDateSeat")
+	defer span.End()
+
+	err := r.sendSpecificMessage(newCtx, changeDateSeatMsg)
 	if err != nil {
 		log.Errorf("rw_repo::ChangeDateSeat error %s", err.Error())
 		return err
@@ -72,7 +85,11 @@ func (r *repo) ChangeDateSeat(ctx context.Context, id uint, newDate string, newS
 
 func (r *repo) Delete(ctx context.Context, id uint) error {
 	deleteMsg := kafkaPkg.DeleteMessage{Id: id}
-	err := r.sendSpecificMessage(deleteMsg)
+
+	newCtx, span := trace.StartSpan(ctx, "Delete")
+	defer span.End()
+
+	err := r.sendSpecificMessage(newCtx, deleteMsg)
 	if err != nil {
 		log.Errorf("rw_repo::Delete error %s", err.Error())
 		return err
@@ -80,7 +97,15 @@ func (r *repo) Delete(ctx context.Context, id uint) error {
 	return nil // TODO
 }
 
-func (r *repo) sendSpecificMessage(msg kafkaPkg.SpecificMessage) error {
+func (r *repo) sendSpecificMessage(ctx context.Context, msg kafkaPkg.SpecificMessage) error {
+	_, span := trace.StartSpan(ctx, "sendSpecificMessage")
+	defer span.End()
+
+	SpanContextJsObj, err := json.Marshal(span.SpanContext())
+	if err != nil {
+		return repoPkg.ErrRepoInternal // TODO
+	}
+
 	commonMsg := msg.ToCommon()
 
 	jsObj, err := json.Marshal(commonMsg)
@@ -91,6 +116,12 @@ func (r *repo) sendSpecificMessage(msg kafkaPkg.SpecificMessage) error {
 	_, _, err = r.syncProducer.SendMessage(&sarama.ProducerMessage{
 		Topic: r.topic,
 		Value: sarama.ByteEncoder(jsObj),
+		Headers: []sarama.RecordHeader{
+			{
+				Key:   []byte(kafkaPkg.SpanContextHeaderKey),
+				Value: SpanContextJsObj,
+			},
+		},
 	})
 	if err != nil {
 		return repoPkg.ErrRepoInternal // TODO
