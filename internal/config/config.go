@@ -11,7 +11,7 @@ const (
 
 	RepoGRPCServerAddress = ":5999"
 
-	RESTServerAddress = ":8080"
+	RESTServerAddress = ":8088"
 
 	LocalCachePoolSize = 10
 
@@ -29,8 +29,7 @@ const (
 	KafkaBrokers                 = "localhost:9095,localhost:9096,localhost:9097"
 	KafkaProducerReturnSuccesses = true
 	KafkaConsumerSleep           = 10 * time.Second
-	KafkaTopic1                  = "test1"
-	KafkaTopic2                  = "test2"
-	KafkaGroupId1                = "group_1"
-	KafkaGroupId2                = "group_2"
+	KafkaConsumerReturnErrors    = true
+	KafkaTopic                   = "bb_test_topic"
+	KafkaGroupId                 = "bb_test_group"
 )

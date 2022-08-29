@@ -4,12 +4,16 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	configPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/config"
 	bbPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking"
 	repoGRPCPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository/grpc_repo"
 	repoPostgresPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository/postgres"
+	repoRWPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository/rw_repo"
+	kafkaConsumerPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/kafka/custom_consumer"
+	kafkaProducerPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/kafka/custom_sync_producer"
 )
 
 func main() {
@@ -43,11 +47,34 @@ func main() {
 		config.MaxConns = configPkg.PosgtreSQLMaxConns
 	}
 
+	// prepare data repository
 	repoReal := repoPostgresPkg.New(pool)
 	go runRepoGRPCServer(ctx, repoReal, configPkg.RepoGRPCServerAddress)
 
+	// prepare kafka
+	brokers := strings.Split(configPkg.KafkaBrokers, ",")
+	topic := configPkg.KafkaTopic
+	groupId := configPkg.KafkaGroupId
+
+	consumer, err := kafkaConsumerPkg.New(
+		brokers,
+		repoReal,
+		groupId,
+	)
+	if err != nil {
+		log.Panic(err)
+	}
+	go consumer.Run(context.Background(), []string{topic}, configPkg.KafkaConsumerSleep)
+
+	producer, err := kafkaProducerPkg.New(brokers)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	// prepare business logic
 	client := prepareRepoGRPCClient(configPkg.RepoGRPCServerAddress)
-	repo := repoGRPCPkg.New(client)
+	repoGRPC := repoGRPCPkg.New(client)
+	repo := repoRWPkg.New(repoGRPC, *producer, topic)
 
 	bb := bbPkg.New(repo)
 

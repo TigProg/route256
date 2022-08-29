@@ -13,14 +13,16 @@ import (
 	kafkaPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/kafka"
 )
 
-func New(brokers []string, offsetInitial int64, isReturnErrors bool, repo repoPkg.Interface) (sarama.ConsumerGroupHandler, error) {
+// TODO change type to interface
+
+func New(brokers []string, repo repoPkg.Interface, groupId string) (*Consumer, error) {
 	cfg := sarama.NewConfig()
 	{
-		cfg.Consumer.Offsets.Initial = offsetInitial
-		cfg.Consumer.Return.Errors = isReturnErrors
+		cfg.Consumer.Offsets.Initial = sarama.OffsetOldest
+		cfg.Consumer.Return.Errors = configPkg.KafkaConsumerReturnErrors
 	}
 
-	client, err := sarama.NewConsumerGroup(brokers, configPkg.KafkaGroupId1, cfg)
+	client, err := sarama.NewConsumerGroup(brokers, groupId, cfg)
 	if err != nil {
 		return nil, err
 	}
