@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"log"
 	"net"
 
+	log "github.com/sirupsen/logrus"
 	dataApiPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/data_api"
 	repoPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository"
 	pb "gitlab.ozon.dev/tigprog/bus_booking/pkg/api"
@@ -18,6 +18,7 @@ func prepareRepoGRPCClient(address string) pb.AdminClient {
 		log.Panic(err)
 	}
 
+	log.Debugf("gRPC client started: [%v]", address)
 	return pb.NewAdminClient(conns)
 }
 

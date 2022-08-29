@@ -2,7 +2,8 @@ package main
 
 import (
 	"context"
-	"log"
+
+	log "github.com/sirupsen/logrus"
 
 	botPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/bot"
 	bbPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking"

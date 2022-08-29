@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/Shopify/sarama"
+	log "github.com/sirupsen/logrus"
 	"gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/models"
 	repoPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository"
 	kafkaPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/kafka"
@@ -32,7 +33,8 @@ func (r *repo) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
 	addMsg := kafkaPkg.AddMessage{Bb: bb}
 	err := r.sendSpecificMessage(addMsg)
 	if err != nil {
-		return 0, err // TODO
+		log.Errorf("rw_repo::Add error %s", err.Error())
+		return 0, err
 	}
 	return 0, nil // TODO
 }
@@ -48,7 +50,8 @@ func (r *repo) ChangeSeat(ctx context.Context, id uint, newSeat uint) error {
 	}
 	err := r.sendSpecificMessage(changeSeatMsg)
 	if err != nil {
-		return err // TODO
+		log.Errorf("rw_repo::ChangeSeat error %s", err.Error())
+		return err
 	}
 	return nil // TODO
 }
@@ -61,7 +64,8 @@ func (r *repo) ChangeDateSeat(ctx context.Context, id uint, newDate string, newS
 	}
 	err := r.sendSpecificMessage(changeDateSeatMsg)
 	if err != nil {
-		return err // TODO
+		log.Errorf("rw_repo::ChangeDateSeat error %s", err.Error())
+		return err
 	}
 	return nil // TODO
 }
@@ -70,7 +74,8 @@ func (r *repo) Delete(ctx context.Context, id uint) error {
 	deleteMsg := kafkaPkg.DeleteMessage{Id: id}
 	err := r.sendSpecificMessage(deleteMsg)
 	if err != nil {
-		return err // TODO
+		log.Errorf("rw_repo::Delete error %s", err.Error())
+		return err
 	}
 	return nil // TODO
 }

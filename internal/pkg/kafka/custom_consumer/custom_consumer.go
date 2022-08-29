@@ -4,8 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"log"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/Shopify/sarama"
 	configPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/config"
@@ -27,6 +28,7 @@ func New(brokers []string, repo repoPkg.Interface, groupId string) (*Consumer, e
 		return nil, err
 	}
 
+	log.Debug("kafka consumer created")
 	return &Consumer{
 		client: client,
 		repo:   repo,
@@ -50,17 +52,16 @@ func (c *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim saram
 	for {
 		select {
 		case <-session.Context().Done():
-			log.Print("Done")
+			log.Info("consumer session done")
 			return nil
 		case msg, ok := <-claim.Messages():
 			if !ok {
-				log.Print("data channel closed")
+				log.Info("consumer data channel closed")
 				return nil
 			} else {
-				log.Printf("%v", msg.Value)
 				err := c.handle(msg.Value)
 				if err != nil {
-					log.Panic(err)
+					log.Panicf("error on handle %v: %v", msg.Value, err)
 				}
 				session.MarkMessage(msg, "")
 			}
@@ -72,7 +73,7 @@ func (c *Consumer) Run(ctx context.Context, topics []string, consumerSleep time.
 	for {
 		err := c.client.Consume(ctx, topics, c)
 		if err != nil {
-			log.Printf("on consume: %v", err)
+			log.Errorf("consumer failed on consume: %v", err)
 			time.Sleep(consumerSleep)
 		}
 	}
@@ -82,6 +83,8 @@ func (c *Consumer) handle(value []byte) error {
 	commonMsg := kafkaPkg.CommonMessage{}
 	err := json.Unmarshal(value, &commonMsg)
 	if err != nil {
+		log.Errorf("consumer failed on unmarshal: %v", err)
+
 		return err // TODO custom error
 	}
 

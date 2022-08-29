@@ -2,6 +2,7 @@ package custom_sync_producer
 
 import (
 	"github.com/Shopify/sarama"
+	log "github.com/sirupsen/logrus"
 	configPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/config"
 )
 
@@ -13,5 +14,7 @@ func New(brokers []string) (*sarama.SyncProducer, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	log.Debug("kafka producer created")
 	return &syncProducer, nil
 }
