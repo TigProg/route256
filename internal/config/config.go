@@ -32,4 +32,6 @@ const (
 	KafkaConsumerReturnErrors    = true
 	KafkaTopic                   = "bb_test_topic"
 	KafkaGroupId                 = "bb_test_group"
+
+	MetricServerHost = ":9876"
 )

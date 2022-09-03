@@ -13,6 +13,7 @@ import (
 	configPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/config"
 	repoPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository"
 	kafkaPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/kafka"
+	metricPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/metrics"
 )
 
 // TODO change type to interface
@@ -33,12 +34,33 @@ func New(brokers []string, repo repoPkg.Interface, groupId string) (*Consumer, e
 	return &Consumer{
 		client: client,
 		repo:   repo,
+		metrics: metricManager{
+			success: metricPkg.NewMetric("custom_consumer::success"),
+			fail:    metricPkg.NewMetric("custom_consumer::fail"),
+			income:  metricPkg.NewMetric("custom_consumer::income"),
+		},
 	}, nil
 }
 
+// TODO change structure to remove copy-paste
+type metricManager struct {
+	success *metricPkg.Metric
+	fail    *metricPkg.Metric
+	income  *metricPkg.Metric
+}
+
 type Consumer struct {
-	client sarama.ConsumerGroup
-	repo   repoPkg.Interface
+	client  sarama.ConsumerGroup
+	repo    repoPkg.Interface
+	metrics metricManager
+}
+
+func (c *Consumer) GetMetrics() []*metricPkg.Metric {
+	return []*metricPkg.Metric{
+		c.metrics.success,
+		c.metrics.fail,
+		c.metrics.income,
+	}
 }
 
 func (c *Consumer) Setup(session sarama.ConsumerGroupSession) error {
@@ -60,9 +82,13 @@ func (c *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim saram
 				log.Info("consumer data channel closed")
 				return nil
 			} else {
+				c.metrics.income.Increment()
 				err := c.handle(msg)
-				if err != nil {
-					log.Panicf("error on handle %v: %v", msg.Value, err)
+				if err == nil {
+					c.metrics.success.Increment()
+				} else {
+					c.metrics.fail.Increment()
+					log.Errorf("error on handle %v: %v", msg.Value, err)
 				}
 				session.MarkMessage(msg, "")
 			}

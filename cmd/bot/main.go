@@ -15,6 +15,7 @@ import (
 	repoRWPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository/rw_repo"
 	kafkaConsumerPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/kafka/custom_consumer"
 	kafkaProducerPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/kafka/custom_sync_producer"
+	metricPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/metrics"
 )
 
 func init() {
@@ -86,6 +87,10 @@ func main() {
 	repo := repoRWPkg.New(repoGRPC, *producer, topic)
 
 	bb := bbPkg.New(repo)
+
+	metricManager := metricPkg.NewMetricManager()
+	metricManager.RegisterMany(consumer.GetMetrics())
+	go metricManager.Run(configPkg.MetricServerHost)
 
 	go runBot(ctx, bb)
 	go runREST(ctx)
