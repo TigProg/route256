@@ -98,6 +98,7 @@ func main() {
 
 	metricManager := metricPkg.NewMetricManager()
 	metricManager.RegisterMany(consumer.GetMetrics())
+	metricManager.RegisterMany(repo.GetMetrics())
 	go metricManager.Run(configPkg.MetricServerHost)
 
 	go runBot(ctx, bb)

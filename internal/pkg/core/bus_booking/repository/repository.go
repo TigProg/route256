@@ -6,6 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 	"gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/models"
+	metricPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/metrics"
 )
 
 var (
@@ -23,4 +24,9 @@ type Interface interface {
 	ChangeSeat(ctx context.Context, id uint, newSeat uint) error
 	ChangeDateSeat(ctx context.Context, id uint, newDate string, newSeat uint) error
 	Delete(ctx context.Context, id uint) error
+}
+
+type InterfaceWithMetrics interface {
+	Interface
+	GetMetrics() []*metricPkg.Metric
 }

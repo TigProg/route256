@@ -2,23 +2,43 @@ package redis_repo
 
 import (
 	"context"
+
 	"gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/models"
 	repoPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository"
+	metricPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/metrics"
 	redisWrapperPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/redis_wrapper"
 )
 
-func New(readRepo, writeRepo repoPkg.Interface, client redisWrapperPkg.Interface) repoPkg.Interface {
+func New(readRepo, writeRepo repoPkg.Interface, client redisWrapperPkg.Interface) repoPkg.InterfaceWithMetrics {
 	return &repo{
 		readRepo:  readRepo,
 		writeRepo: writeRepo,
 		client:    client,
+		metrics: metricManager{
+			hit:  metricPkg.NewMetric("redis_repo::hit"),
+			miss: metricPkg.NewMetric("redis_repo::miss"),
+		},
 	}
+}
+
+// TODO change structure to remove copy-paste
+type metricManager struct {
+	hit  *metricPkg.Metric
+	miss *metricPkg.Metric
 }
 
 type repo struct {
 	readRepo  repoPkg.Interface
 	writeRepo repoPkg.Interface
 	client    redisWrapperPkg.Interface
+	metrics   metricManager
+}
+
+func (r *repo) GetMetrics() []*metricPkg.Metric {
+	return []*metricPkg.Metric{
+		r.metrics.hit,
+		r.metrics.miss,
+	}
 }
 
 func (r *repo) List(ctx context.Context, offset uint, limit uint) ([]models.BusBooking, error) {
@@ -39,8 +59,10 @@ func (r *repo) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
 func (r *repo) Get(ctx context.Context, id uint) (*models.BusBooking, error) {
 	bb, err := r.client.GetById(id)
 	if err == nil {
+		r.metrics.hit.Increment()
 		return bb, err
 	}
+	r.metrics.miss.Increment()
 
 	bb, err = r.readRepo.Get(ctx, id)
 	if err == nil {
