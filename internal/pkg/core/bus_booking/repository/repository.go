@@ -13,6 +13,7 @@ var (
 	ErrRepoBusBookingAlreadyExists = errors.New("bus booking already exists")
 	ErrRepoRouteNameNotExist       = errors.New("route not exist")
 	ErrRepoInternal                = errors.New("internal error")
+	ErrRepoNotImplementedMethod    = errors.Wrap(ErrRepoInternal, "not implemented")
 )
 
 type Interface interface {

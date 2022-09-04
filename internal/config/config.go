@@ -34,4 +34,9 @@ const (
 	KafkaGroupId                 = "bb_test_group"
 
 	MetricServerHost = ":9876"
+
+	RedisHost       = ":6379"
+	RedisDb         = 0
+	RedisPassword   = ""
+	RedisExpiration = 10 * time.Minute
 )
