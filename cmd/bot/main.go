@@ -11,11 +11,13 @@ import (
 	configPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/config"
 	bbPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking"
 	repoGRPCPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository/grpc_repo"
+	repoKafkaPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository/kafka_repo"
 	repoPostgresPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository/postgres"
-	repoRWPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository/rw_repo"
+	repoRedis "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository/redis_repo"
 	kafkaConsumerPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/kafka/custom_consumer"
 	kafkaProducerPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/kafka/custom_sync_producer"
 	metricPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/metrics"
+	redisWrapperPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/redis_wrapper"
 )
 
 func init() {
@@ -84,12 +86,19 @@ func main() {
 	// prepare business logic
 	client := prepareRepoGRPCClient(configPkg.RepoGRPCServerAddress)
 	repoGRPC := repoGRPCPkg.New(client)
-	repo := repoRWPkg.New(repoGRPC, *producer, topic)
+	repoKafka := repoKafkaPkg.New(*producer, topic)
+	repo := repoRedis.New(repoGRPC, repoKafka, redisWrapperPkg.New(
+		configPkg.RedisHost,
+		configPkg.RedisDb,
+		configPkg.RedisPassword,
+		configPkg.RedisExpiration,
+	))
 
 	bb := bbPkg.New(repo)
 
 	metricManager := metricPkg.NewMetricManager()
 	metricManager.RegisterMany(consumer.GetMetrics())
+	metricManager.RegisterMany(repo.GetMetrics())
 	go metricManager.Run(configPkg.MetricServerHost)
 
 	go runBot(ctx, bb)
