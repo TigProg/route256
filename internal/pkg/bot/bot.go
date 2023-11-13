@@ -3,7 +3,8 @@ package bot
 import (
 	"context"
 	"fmt"
-	"log"
+
+	log "github.com/sirupsen/logrus"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/pkg/errors"
@@ -22,7 +23,7 @@ func MustNew() Interface {
 		log.Panic(errors.Wrap(err, "init telegram bot"))
 	}
 	bot.Debug = configPkg.TelegramBotApiDebug
-	log.Printf("Authorized on account %s", bot.Self.UserName)
+	log.Infof("Authorized on account %s", bot.Self.UserName)
 
 	return &commander{
 		bot:   bot,
@@ -53,14 +54,14 @@ func (c *commander) Run(ctx context.Context) error {
 		if cmdName := update.Message.Command(); cmdName != "" {
 			if cmd, ok := c.route[cmdName]; ok {
 				cmdArgs := update.Message.CommandArguments()
-				log.Printf("Run [%s] command with args: <%s>", cmdName, cmdArgs)
+				log.Infof("Run [%s] command with args: <%s>", cmdName, cmdArgs)
 				msg.Text = cmd.Process(ctx, cmdArgs)
 			} else {
-				log.Printf("Get unknown command: <%s>", cmdName)
+				log.Infof("Get unknown command: <%s>", cmdName)
 				msg.Text = "Unknown command, try /help"
 			}
 		} else {
-			log.Printf("Get plain text: [%s]", update.Message.Text)
+			log.Infof("Get plain text: [%s]", update.Message.Text)
 			msg.Text = fmt.Sprintf("you send <%v>", update.Message.Text)
 		}
 

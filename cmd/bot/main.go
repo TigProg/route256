@@ -3,14 +3,28 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+	"os"
+	"strings"
 
 	"github.com/jackc/pgx/v4/pgxpool"
+	log "github.com/sirupsen/logrus"
 	configPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/config"
 	bbPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking"
 	repoGRPCPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository/grpc_repo"
 	repoPostgresPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository/postgres"
+	repoRWPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository/rw_repo"
+	kafkaConsumerPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/kafka/custom_consumer"
+	kafkaProducerPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/kafka/custom_sync_producer"
+	metricPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/metrics"
 )
+
+func init() {
+	log.SetFormatter(&log.TextFormatter{
+		FullTimestamp: true,
+	})
+	log.SetOutput(os.Stdout)
+	log.SetLevel(log.DebugLevel) // TODO change to INFO
+}
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -43,13 +57,40 @@ func main() {
 		config.MaxConns = configPkg.PosgtreSQLMaxConns
 	}
 
+	// prepare data repository
 	repoReal := repoPostgresPkg.New(pool)
 	go runRepoGRPCServer(ctx, repoReal, configPkg.RepoGRPCServerAddress)
 
+	// prepare kafka
+	brokers := strings.Split(configPkg.KafkaBrokers, ",")
+	topic := configPkg.KafkaTopic
+	groupId := configPkg.KafkaGroupId
+
+	consumer, err := kafkaConsumerPkg.New(
+		brokers,
+		repoReal,
+		groupId,
+	)
+	if err != nil {
+		log.Panic(err)
+	}
+	go consumer.Run(ctx, []string{topic}, configPkg.KafkaConsumerSleep)
+
+	producer, err := kafkaProducerPkg.New(brokers)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	// prepare business logic
 	client := prepareRepoGRPCClient(configPkg.RepoGRPCServerAddress)
-	repo := repoGRPCPkg.New(client)
+	repoGRPC := repoGRPCPkg.New(client)
+	repo := repoRWPkg.New(repoGRPC, *producer, topic)
 
 	bb := bbPkg.New(repo)
+
+	metricManager := metricPkg.NewMetricManager()
+	metricManager.RegisterMany(consumer.GetMetrics())
+	go metricManager.Run(configPkg.MetricServerHost)
 
 	go runBot(ctx, bb)
 	go runREST(ctx)

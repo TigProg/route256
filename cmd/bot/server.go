@@ -2,9 +2,10 @@ package main
 
 import (
 	"context"
-	"log"
 	"net"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	apiPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/api"

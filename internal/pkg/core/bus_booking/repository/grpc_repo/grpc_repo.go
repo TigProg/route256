@@ -2,7 +2,8 @@ package grpc_repo
 
 import (
 	"context"
-	"log"
+
+	log "github.com/sirupsen/logrus"
 
 	"gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/models"
 	repoPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository"
@@ -112,7 +113,7 @@ func (r *repo) Delete(ctx context.Context, id uint) error {
 func statusErrorToRepoError(err error) error {
 	st, ok := status.FromError(err)
 	if !ok { // network error
-		log.Printf("grpc_repo::statusErrorToRepoError not status error %s", err.Error())
+		log.Errorf("grpc_repo::statusErrorToRepoError not status error %s", err.Error())
 		return repoPkg.ErrRepoInternal
 	}
 
@@ -124,7 +125,7 @@ func statusErrorToRepoError(err error) error {
 		case repoPkg.ErrRepoRouteNameNotExist.Error():
 			return repoPkg.ErrRepoRouteNameNotExist
 		default:
-			log.Printf("grpc_repo::statusErrorToRepoError unexpected not found error %s", err.Error())
+			log.Errorf("grpc_repo::statusErrorToRepoError unexpected not found error %s", err.Error())
 			return repoPkg.ErrRepoInternal
 		}
 	case codes.AlreadyExists:
@@ -133,6 +134,6 @@ func statusErrorToRepoError(err error) error {
 		return repoPkg.ErrRepoInternal
 	}
 
-	log.Printf("grpc_repo::statusErrorToRepoError unexpected error %s", err.Error())
+	log.Errorf("grpc_repo::statusErrorToRepoError unexpected error %s", err.Error())
 	return repoPkg.ErrRepoInternal
 }

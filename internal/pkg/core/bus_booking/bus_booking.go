@@ -2,8 +2,9 @@ package bus_booking
 
 import (
 	"context"
-	"log"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/pkg/errors"
 	"gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/models"
@@ -162,6 +163,6 @@ func repoErrorToBbError(err error) error {
 		return ErrInternal
 	}
 
-	log.Printf("bus_booking::repoErrorToBbError unexpected error %s", err.Error())
+	log.Errorf("bus_booking::repoErrorToBbError unexpected error %s", err.Error())
 	return ErrInternal
 }

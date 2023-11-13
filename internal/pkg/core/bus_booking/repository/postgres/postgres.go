@@ -2,10 +2,10 @@ package postgres
 
 import (
 	"context"
-	"log"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/models"
 	repoPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository"
 )
@@ -42,7 +42,7 @@ func (r *repo) List(ctx context.Context, offset uint, limit uint) ([]models.BusB
 	`
 	rows, err := r.pool.Query(ctx, query, limit, offset)
 	if err != nil {
-		log.Printf("postgresRepoPkg::List query error %s", err.Error())
+		log.Errorf("postgresRepoPkg::List query error %s", err.Error())
 		return nil, repoPkg.ErrRepoInternal
 	}
 	defer rows.Close()
@@ -51,7 +51,7 @@ func (r *repo) List(ctx context.Context, offset uint, limit uint) ([]models.BusB
 	for rows.Next() {
 		values, err := rows.Values()
 		if err != nil {
-			log.Printf("postgresRepoPkg::List empty rows after check %s", err.Error())
+			log.Errorf("postgresRepoPkg::List empty rows after check %s", err.Error())
 			return nil, repoPkg.ErrRepoInternal
 		}
 		result = append(result, models.BusBooking{
@@ -70,7 +70,7 @@ func (r *repo) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
 		if errors.Is(err, repoPkg.ErrRepoRouteNameNotExist) {
 			return 0, err
 		}
-		log.Printf("postgresRepoPkg::Add getRouteIdByRouteName %s", err.Error())
+		log.Errorf("postgresRepoPkg::Add getRouteIdByRouteName %s", err.Error())
 		return 0, repoPkg.ErrRepoInternal
 	}
 
@@ -79,7 +79,7 @@ func (r *repo) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
 		return 0, repoPkg.ErrRepoBusBookingAlreadyExists
 	}
 	if !errors.Is(err, repoPkg.ErrRepoBusBookingNotExists) {
-		log.Printf("postgresRepoPkg::Add reverseSearch %s", err.Error())
+		log.Errorf("postgresRepoPkg::Add reverseSearch %s", err.Error())
 		return 0, repoPkg.ErrRepoInternal
 	}
 
@@ -90,7 +90,7 @@ func (r *repo) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
 	`
 	rows, err := r.pool.Query(ctx, query, existedRouteId, bb.Date, bb.Seat)
 	if err != nil {
-		log.Printf("postgresRepoPkg::Add query error %s", err.Error())
+		log.Errorf("postgresRepoPkg::Add query error %s", err.Error())
 		return 0, repoPkg.ErrRepoInternal
 	}
 	defer rows.Close()
@@ -98,12 +98,12 @@ func (r *repo) Add(ctx context.Context, bb models.BusBooking) (uint, error) {
 	for rows.Next() {
 		values, err := rows.Values()
 		if err != nil {
-			log.Printf("postgresRepoPkg::Add empty rows after check %s", err.Error())
+			log.Errorf("postgresRepoPkg::Add empty rows after check %s", err.Error())
 			return 0, repoPkg.ErrRepoInternal
 		}
 		return uint(values[0].(int32)), nil
 	}
-	log.Printf("postgresRepoPkg::Add empty returning %s", err.Error())
+	log.Errorf("postgresRepoPkg::Add empty returning %s", err.Error())
 	return 0, repoPkg.ErrRepoInternal
 }
 
@@ -122,7 +122,7 @@ func (r *repo) Get(ctx context.Context, id uint) (*models.BusBooking, error) {
 	`
 	rows, err := r.pool.Query(ctx, query, id)
 	if err != nil {
-		log.Printf("postgresRepoPkg::Get query error %s", err.Error())
+		log.Errorf("postgresRepoPkg::Get query error %s", err.Error())
 		return nil, repoPkg.ErrRepoInternal
 	}
 	defer rows.Close()
@@ -130,7 +130,7 @@ func (r *repo) Get(ctx context.Context, id uint) (*models.BusBooking, error) {
 	for rows.Next() {
 		values, err := rows.Values()
 		if err != nil {
-			log.Printf("postgresRepoPkg::Get empty rows after check %s", err.Error())
+			log.Errorf("postgresRepoPkg::Get empty rows after check %s", err.Error())
 			return nil, repoPkg.ErrRepoInternal
 		}
 		return &models.BusBooking{
@@ -157,7 +157,7 @@ func (r *repo) ChangeSeat(ctx context.Context, id uint, newSeat uint) error {
 		return repoPkg.ErrRepoBusBookingAlreadyExists
 	}
 	if !errors.Is(err, repoPkg.ErrRepoBusBookingNotExists) {
-		log.Printf("postgresRepoPkg::ChangeSeat reverseSearch %s", err.Error())
+		log.Errorf("postgresRepoPkg::ChangeSeat reverseSearch %s", err.Error())
 		return repoPkg.ErrRepoInternal
 	}
 
@@ -168,7 +168,7 @@ func (r *repo) ChangeSeat(ctx context.Context, id uint, newSeat uint) error {
 	`
 	rows, err := r.pool.Query(ctx, query, id, newSeat)
 	if err != nil {
-		log.Printf("postgresRepoPkg::ChangeSeat query error %s", err.Error())
+		log.Errorf("postgresRepoPkg::ChangeSeat query error %s", err.Error())
 		return repoPkg.ErrRepoInternal
 	}
 	defer rows.Close()
@@ -189,7 +189,7 @@ func (r *repo) ChangeDateSeat(ctx context.Context, id uint, newDate string, newS
 		return repoPkg.ErrRepoBusBookingAlreadyExists
 	}
 	if !errors.Is(err, repoPkg.ErrRepoBusBookingNotExists) {
-		log.Printf("postgresRepoPkg::ChangeDateSeat reverseSearch %s", err.Error())
+		log.Errorf("postgresRepoPkg::ChangeDateSeat reverseSearch %s", err.Error())
 		return repoPkg.ErrRepoInternal
 	}
 
@@ -200,7 +200,7 @@ func (r *repo) ChangeDateSeat(ctx context.Context, id uint, newDate string, newS
 	`
 	rows, err := r.pool.Query(ctx, query, id, newSeat, newDate)
 	if err != nil {
-		log.Printf("postgresRepoPkg::ChangeDateSeat query error %s", err.Error())
+		log.Errorf("postgresRepoPkg::ChangeDateSeat query error %s", err.Error())
 		return repoPkg.ErrRepoInternal
 	}
 	defer rows.Close()
@@ -220,7 +220,7 @@ func (r *repo) Delete(ctx context.Context, id uint) error {
 	`
 	rows, err := r.pool.Query(ctx, query, id)
 	if err != nil {
-		log.Printf("postgresRepoPkg::Delete query error %s", err.Error())
+		log.Errorf("postgresRepoPkg::Delete query error %s", err.Error())
 		return repoPkg.ErrRepoInternal
 	}
 	defer rows.Close()

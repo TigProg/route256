@@ -11,7 +11,7 @@ const (
 
 	RepoGRPCServerAddress = ":5999"
 
-	RESTServerAddress = ":8080"
+	RESTServerAddress = ":8088"
 
 	LocalCachePoolSize = 10
 
@@ -25,4 +25,13 @@ const (
 	PosgtreSQLMaxConnLifetime = time.Hour
 	PosgtreSQLMinConns        = 2
 	PosgtreSQLMaxConns        = 4
+
+	KafkaBrokers                 = "localhost:9095,localhost:9096,localhost:9097"
+	KafkaProducerReturnSuccesses = true
+	KafkaConsumerSleep           = 10 * time.Second
+	KafkaConsumerReturnErrors    = true
+	KafkaTopic                   = "bb_test_topic"
+	KafkaGroupId                 = "bb_test_group"
+
+	MetricServerHost = ":9876"
 )

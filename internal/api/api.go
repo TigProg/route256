@@ -2,7 +2,8 @@ package api
 
 import (
 	"context"
-	"log"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/codes"
@@ -120,6 +121,6 @@ func bbErrorToStatusError(err error) error {
 		return status.Error(codes.Internal, err.Error())
 	}
 
-	log.Printf("api::bbErrorToStatusError unexpected error %s", err.Error())
+	log.Errorf("api::bbErrorToStatusError unexpected error %s", err.Error())
 	return status.Error(codes.Internal, err.Error())
 }

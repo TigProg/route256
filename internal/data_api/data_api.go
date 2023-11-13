@@ -2,7 +2,8 @@ package api
 
 import (
 	"context"
-	"log"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/pkg/errors"
 	repoPkg "gitlab.ozon.dev/tigprog/bus_booking/internal/pkg/core/bus_booking/repository"
@@ -13,7 +14,7 @@ import (
 	pb "gitlab.ozon.dev/tigprog/bus_booking/pkg/api"
 )
 
-func New(repo repoPkg.Interface) pb.AdminServer { // TODO maybe another pb
+func New(repo repoPkg.Interface) pb.AdminServer {
 	return &implementation{
 		repo: repo,
 	}
@@ -118,6 +119,6 @@ func repoErrorToStatusError(err error) error {
 		return status.Error(codes.Internal, err.Error())
 	}
 
-	log.Printf("data_api::repoErrorToStatusError unexpected error %s", err.Error())
+	log.Errorf("data_api::repoErrorToStatusError unexpected error %s", err.Error())
 	return status.Error(codes.Internal, err.Error())
 }
